@@ -1,0 +1,24 @@
+[Unit]
+Description=Bose M1 restricted SSH and optional IR bridge
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=@USER@
+SupplementaryGroups=@GROUPS@
+WorkingDirectory=@DIR@
+ExecStart=@PYTHON@ -u @DIR@/bose_bridge.py@SERIAL_ARG@@IR_CONFIG@
+Restart=on-failure
+RestartSec=5
+RestartPreventExitStatus=20
+NoNewPrivileges=true
+RuntimeDirectory=bose-control
+RuntimeDirectoryMode=0700
+StateDirectory=bose-control
+StateDirectoryMode=0700
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target

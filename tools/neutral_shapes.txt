@@ -1,0 +1,6 @@
+# Generic shapes only: a line matching any of these is a finding in a public file.
+# Private literal values are passed with the scan's --patterns option from outside the repo.
+(?<![0-9.])(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?![0-9.])
+(?<![0-9A-Fa-f:])(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}(?![0-9A-Fa-f:])
+usb-[A-Za-z0-9]+_[A-Za-z0-9_.-]+
+[A-Za-z0-9._%+-]+@(?!2x\.png\b)[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}

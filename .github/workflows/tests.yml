@@ -1,0 +1,29 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Test suites
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Stdlib suites
+        run: ./run_tests.sh --stdlib-only
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.14"
+      - name: Home Assistant suites in a venv
+        run: |
+          python -m venv "$RUNNER_TEMP/ha-venv"
+          "$RUNNER_TEMP/ha-venv/bin/pip" install -q -r requirements-ha-test.txt
+          for t in integration transport compat pairing pairing_flow; do
+            "$RUNNER_TEMP/ha-venv/bin/python" -B "test_bose_$t.py"
+          done
+          "$RUNNER_TEMP/ha-venv/bin/python" -B test_build_artifact.py

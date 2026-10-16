@@ -1,0 +1,229 @@
+{
+  "title": "Bose Lifestyle Controller",
+  "config": {
+    "step": {
+      "key": {
+        "title": "Pair the bridge computer",
+        "description": "Unofficial community project. Not affiliated with Bose Corporation.\n\nStep 1 of 3. Copy this command and run it in a terminal on the bridge computer, in the folder that contains install-bridge.sh. Nothing needs to be typed here.\n\n```\n{command}\n```\n\nThe command installs the bridge and registers this Home Assistant's public key. Use an account that can administer the bridge computer. The public key is not secret. When the command finishes, continue here.",
+        "submit": "Continue"
+      },
+      "host": {
+        "title": "Bridge computer address",
+        "description": "Step 2 of 3. Enter the address of the bridge computer and the SSH user the installer created. The user defaults to bose, the installer's default. Port 22 is the usual SSH port.",
+        "data": {
+          "host": "Bridge host",
+          "user": "SSH user",
+          "port": "SSH port"
+        },
+        "submit": "Continue"
+      },
+      "fingerprint": {
+        "title": "Confirm the bridge computer",
+        "description": "Step 3 of 3. Home Assistant read this host-key fingerprint from the bridge computer: **{fingerprint}**\n\nThe install-bridge.sh command printed its own fingerprint on the bridge computer. Type that printed fingerprint below. Nothing is saved until you submit, and submitting pins the key only if the two match exactly.",
+        "data": {
+          "fingerprint": "Fingerprint printed by install-bridge.sh"
+        },
+        "submit": "Confirm and pair"
+      }
+    },
+    "error": {
+      "cannot_connect": "Home Assistant can't reach the bridge computer, or it doesn't accept this key yet. Check that the install command finished on the bridge computer and that the bridge is running, then submit again. No command was retried.",
+      "forced_command_refused": "The bridge computer answered in a way the bridge doesn't expect. Check that you ran the full install command exactly as shown, then submit again.",
+      "invalid_host": "Enter the bridge computer's host name or IP address.",
+      "invalid_user": "Enter the SSH user the installer created: lowercase letters, digits, underscore or hyphen.",
+      "invalid_port": "Enter a port number from 1 to 65535.",
+      "no_host_key": "Home Assistant couldn't read the bridge computer's host key. Check the address and that the bridge computer is on with its SSH service running, then submit again.",
+      "busy": "Another learning session is active. Finish or cancel it, or wait five minutes.",
+      "invalid_request": "Enter a valid name (1\u201364 characters).",
+      "remote_limit": "The bridge supports up to 32 remotes.",
+      "no_capture": "Three matching presses have not been verified.",
+      "conflict": "This code belongs to a different button.",
+      "no_mapping": "This button has no saved code. Learn it before enabling it."
+    },
+    "abort": {
+      "ssh_missing": "The ssh program isn't available in this Home Assistant installation, so it can't pair with the bridge computer. See 'Home Assistant without ssh' in the install guide.",
+      "ssh_keyscan_missing": "The ssh-keyscan program isn't available in this Home Assistant installation, so it can't read the bridge computer's host key. See 'Home Assistant without ssh' in the install guide.",
+      "key_unreadable": "Home Assistant can't read the saved pairing key. Check the permissions of the .ssh folder in the Home Assistant configuration folder, then start pairing again. Nothing was changed.",
+      "config_dir_unwritable": "Home Assistant can't write to its configuration folder, so it can't save the pairing key. Check the folder's permissions, then start pairing again.",
+      "key_exists": "A pairing key exists but Home Assistant couldn't reuse it. Remove the bose_ed25519 file from the .ssh folder in the Home Assistant configuration folder, then start pairing again.",
+      "fingerprint_mismatch": "The fingerprint you typed doesn't match the bridge computer's host key. Nothing was saved. Start pairing again and compare the fingerprint carefully.",
+      "cannot_connect": "The bridge is unavailable or returned an invalid response. No command was retried.",
+      "unknown_remote": "This remote profile is no longer on the bridge computer.",
+      "deleted": "The remote profile has been deleted.",
+      "reconfigure_successful": "Remote configuration saved.",
+      "already_configured": "This bridge is already configured."
+    }
+  },
+  "config_subentries": {
+    "remotes": {
+      "title": "Remotes",
+      "step": {
+        "user": {
+          "title": "Add remote",
+          "description": "You can register an existing remote profile without changing its mappings.",
+          "data": {
+            "profile": "Remote profile"
+          }
+        },
+        "name": {
+          "title": "Name your remote",
+          "description": "Only Volume up, Volume down, and Mute can be learned. Saved buttons start disabled.\n\nOther remotes you have already set up stop working while you learn this one. They work again when you finish.",
+          "data": {
+            "name": "Remote nickname"
+          },
+          "submit": "Start setup"
+        },
+        "prepare": {
+          "title": "{action} \u2014 {step} of {steps}",
+          "description": "Other remotes you have already set up stop working while you learn this one. They work again when you finish.\n\nPoint {name} at the IR receiver. Select Listen, then press and release this button three times, about one second apart. Held-button repeats do not count. Learning sends no Bose commands.",
+          "data": {
+            "choice": "Next action"
+          },
+          "submit": "Continue"
+        },
+        "detected": {
+          "title": "Review {action}",
+          "description": "{note}",
+          "data": {
+            "choice": "What next?"
+          },
+          "submit": "Continue"
+        },
+        "review": {
+          "title": "Save {name}",
+          "description": "{mappings}\n\nSaving disables every learned or relearned button. After saving, Configure remote to enable one button at a time, then turn on the remote Enabled switch for physical acceptance.",
+          "last_step": true,
+          "submit": "Save remote"
+        },
+        "check": {
+          "title": "Ready to use",
+          "description": "Other remotes you have already set up stop working while you learn this one. They work again when you finish.\n\nPress each learned button once so the bridge can confirm it. Checking sends no Bose commands. Buttons stay disabled until you enable them in Configure remote.",
+          "submit": "Start check"
+        },
+        "check_detected": {
+          "title": "Ready to use: {action} ({step} of {steps})",
+          "description": "{note}",
+          "submit": "Continue"
+        },
+        "reconfigure": {
+          "title": "Configure remote",
+          "description": "Removing only the Home Assistant registration keeps the remote profile on the bridge computer. Delete here to remove it from the bridge computer.",
+          "data": {
+            "operation": "Operation",
+            "remote_id": "Remote"
+          }
+        },
+        "relearn": {
+          "title": "Relearn one button",
+          "description": "Existing mappings remain intact until Save remote.\n\nOther remotes you have already set up stop working while you learn this one. They work again when you finish.",
+          "data": {
+            "key": "Button"
+          }
+        },
+        "mapping": {
+          "title": "Manage one mapping",
+          "description": "{mappings}\n\nEnable one button at a time and physically test this remote separately. Undecodable or ambiguous signals should remain skipped.",
+          "data": {
+            "key": "Button",
+            "operation": "Operation"
+          },
+          "submit": "Save mapping"
+        },
+        "rename": {
+          "title": "Rename remote",
+          "data": {
+            "name": "Remote name"
+          },
+          "submit": "Save name"
+        },
+        "delete": {
+          "title": "Delete remote profile",
+          "description": "This removes all saved mappings for this remote from the bridge computer. Removing the HA registration alone keeps them.",
+          "last_step": true,
+          "submit": "Delete remote profile"
+        }
+      },
+      "error": {
+        "cannot_connect": "The bridge is unavailable or returned an invalid response. No command was retried.",
+        "busy": "Another learning session is active. Finish or cancel it, or wait five minutes.",
+        "invalid_request": "Enter a valid name (1\u201364 characters).",
+        "name_length": "Enter a name from 1 to 40 characters.",
+        "remote_limit": "The bridge supports up to 32 remotes.",
+        "no_capture": "Three matching presses have not been verified.",
+        "conflict": "This code belongs to a different button.",
+        "no_mapping": "This button has no saved code. Learn it before enabling it."
+      },
+      "abort": {
+        "cannot_connect": "The bridge is unavailable or returned an invalid response. No command was retried.",
+        "unknown_remote": "This remote profile is no longer on the bridge computer.",
+        "deleted": "The remote profile has been deleted.",
+        "reconfigure_successful": "Remote configuration saved.",
+        "already_configured": "This bridge is already configured."
+      },
+      "progress": {
+        "capture": "Listening for {action}. {verified} of 3 matching presses verified. Press and release the button three times, about one second apart, within 30 seconds. Held-button repeats do not count.",
+        "check": "Press {action} once. Button {step} of {steps}. Press and release it once within 30 seconds."
+      },
+      "entry_type": "Remote",
+      "initiate_flow": {
+        "user": "Add remote",
+        "reconfigure": "Configure remote"
+      }
+    },
+    "controller": {
+      "title": "Controller",
+      "abort": {
+        "managed_in_card": "Open the Bose Lifestyle Controller card settings to manage this group."
+      }
+    },
+    "zones": {
+      "title": "Zones",
+      "abort": {
+        "managed_in_card": "Open the Bose Lifestyle Controller card settings to manage this group."
+      }
+    }
+  },
+  "exceptions": {
+    "not_allowed": {
+      "message": "That control is turned off."
+    },
+    "uncertain": {
+      "message": "We couldn't confirm that command. Check the room before pressing again."
+    },
+    "not_sent": {
+      "message": "That wasn't sent. Nothing was changed."
+    },
+    "connection_lost": {
+      "message": "Can't reach the bridge computer right now."
+    },
+    "fault_paused": {
+      "message": "FAULTED \u2014 controls paused; use the P1 remote"
+    },
+    "bridge_unavailable": {
+      "message": "Can't reach the bridge computer right now."
+    },
+    "refused_by_unit": {
+      "message": "The Bose control unit declined that command. Nothing was changed."
+    },
+    "config_uncertain": {
+      "message": "The bridge's settings couldn't be confirmed. Ask the person who installed this system for help."
+    },
+    "invalid_response": {
+      "message": "The bridge computer sent something this version can't read. Check that the bridge and Home Assistant are on the same version."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Fault guidance",
+        "description": "Add an optional short message shown on the card while the bridge is faulted. Phone alerts use fixed guidance.",
+        "data": {
+          "fault_message": "Additional card message"
+        }
+      }
+    },
+    "error": {
+      "invalid_fault_message": "Enter a one-line message of at most 160 characters."
+    }
+  }
+}

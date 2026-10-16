@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.sqlite*
+ir-config.json
+build/
+maintainer/verify/evidence/*.json
+maintainer/verify/evidence/*.txt

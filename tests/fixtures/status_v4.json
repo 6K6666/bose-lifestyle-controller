@@ -1,0 +1,595 @@
+{
+  "actions": {
+    "room-a-mute": {
+      "alias": false,
+      "allowed": true,
+      "function": "mute",
+      "source": null,
+      "verified": true,
+      "zone": "a"
+    },
+    "room-a-power-off": {
+      "alias": false,
+      "allowed": true,
+      "function": "power-off",
+      "source": null,
+      "verified": true,
+      "zone": "a"
+    },
+    "room-a-power-on": {
+      "alias": false,
+      "allowed": true,
+      "function": "power-on",
+      "source": null,
+      "verified": true,
+      "zone": "a"
+    },
+    "room-a-source-am": {
+      "alias": false,
+      "allowed": true,
+      "function": "source",
+      "source": "am",
+      "verified": true,
+      "zone": "a"
+    },
+    "room-a-source-aux": {
+      "alias": false,
+      "allowed": true,
+      "function": "source",
+      "source": "aux",
+      "verified": true,
+      "zone": "a"
+    },
+    "room-a-source-cd": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "cd",
+      "verified": true,
+      "zone": "a"
+    },
+    "room-a-source-fm": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "fm",
+      "verified": true,
+      "zone": "a"
+    },
+    "room-a-source-tape": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "tape",
+      "verified": true,
+      "zone": "a"
+    },
+    "room-a-source-video-1": {
+      "alias": false,
+      "allowed": true,
+      "function": "source",
+      "source": "video-1",
+      "verified": true,
+      "zone": "a"
+    },
+    "room-a-source-video-2": {
+      "alias": false,
+      "allowed": true,
+      "function": "source",
+      "source": "video-2",
+      "verified": true,
+      "zone": "a"
+    },
+    "room-a-unmute": {
+      "alias": false,
+      "allowed": true,
+      "function": "unmute",
+      "source": null,
+      "verified": true,
+      "zone": "a"
+    },
+    "room-a-volume-up": {
+      "alias": false,
+      "allowed": true,
+      "function": "volume-up",
+      "source": null,
+      "verified": true,
+      "zone": "a"
+    },
+    "room-b-mute": {
+      "alias": false,
+      "allowed": true,
+      "function": "mute",
+      "source": null,
+      "verified": true,
+      "zone": "b"
+    },
+    "room-b-power-off": {
+      "alias": false,
+      "allowed": true,
+      "function": "power-off",
+      "source": null,
+      "verified": true,
+      "zone": "b"
+    },
+    "room-b-power-on": {
+      "alias": false,
+      "allowed": true,
+      "function": "power-on",
+      "source": null,
+      "verified": true,
+      "zone": "b"
+    },
+    "room-b-source-am": {
+      "alias": false,
+      "allowed": true,
+      "function": "source",
+      "source": "am",
+      "verified": true,
+      "zone": "b"
+    },
+    "room-b-source-aux": {
+      "alias": false,
+      "allowed": true,
+      "function": "source",
+      "source": "aux",
+      "verified": true,
+      "zone": "b"
+    },
+    "room-b-source-cd": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "cd",
+      "verified": true,
+      "zone": "b"
+    },
+    "room-b-source-fm": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "fm",
+      "verified": true,
+      "zone": "b"
+    },
+    "room-b-source-tape": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "tape",
+      "verified": true,
+      "zone": "b"
+    },
+    "room-b-source-video-1": {
+      "alias": false,
+      "allowed": true,
+      "function": "source",
+      "source": "video-1",
+      "verified": true,
+      "zone": "b"
+    },
+    "room-b-source-video-2": {
+      "alias": false,
+      "allowed": true,
+      "function": "source",
+      "source": "video-2",
+      "verified": true,
+      "zone": "b"
+    },
+    "room-b-unmute": {
+      "alias": false,
+      "allowed": true,
+      "function": "unmute",
+      "source": null,
+      "verified": true,
+      "zone": "b"
+    },
+    "room-b-volume-down": {
+      "alias": false,
+      "allowed": true,
+      "function": "volume-down",
+      "source": null,
+      "verified": true,
+      "zone": "b"
+    },
+    "room-b-volume-up": {
+      "alias": false,
+      "allowed": true,
+      "function": "volume-up",
+      "source": null,
+      "verified": true,
+      "zone": "b"
+    },
+    "room-c-mute": {
+      "alias": false,
+      "allowed": true,
+      "function": "mute",
+      "source": null,
+      "verified": true,
+      "zone": "c"
+    },
+    "room-c-power-off": {
+      "alias": false,
+      "allowed": true,
+      "function": "power-off",
+      "source": null,
+      "verified": true,
+      "zone": "c"
+    },
+    "room-c-power-on": {
+      "alias": false,
+      "allowed": true,
+      "function": "power-on",
+      "source": null,
+      "verified": true,
+      "zone": "c"
+    },
+    "room-c-source-am": {
+      "alias": false,
+      "allowed": true,
+      "function": "source",
+      "source": "am",
+      "verified": true,
+      "zone": "c"
+    },
+    "room-c-source-aux": {
+      "alias": false,
+      "allowed": true,
+      "function": "source",
+      "source": "aux",
+      "verified": true,
+      "zone": "c"
+    },
+    "room-c-source-cd": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "cd",
+      "verified": true,
+      "zone": "c"
+    },
+    "room-c-source-fm": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "fm",
+      "verified": true,
+      "zone": "c"
+    },
+    "room-c-source-tape": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "tape",
+      "verified": true,
+      "zone": "c"
+    },
+    "room-c-source-video-1": {
+      "alias": false,
+      "allowed": true,
+      "function": "source",
+      "source": "video-1",
+      "verified": true,
+      "zone": "c"
+    },
+    "room-c-source-video-2": {
+      "alias": false,
+      "allowed": true,
+      "function": "source",
+      "source": "video-2",
+      "verified": true,
+      "zone": "c"
+    },
+    "room-c-unmute": {
+      "alias": false,
+      "allowed": true,
+      "function": "unmute",
+      "source": null,
+      "verified": true,
+      "zone": "c"
+    },
+    "room-c-volume-down": {
+      "alias": false,
+      "allowed": true,
+      "function": "volume-down",
+      "source": null,
+      "verified": true,
+      "zone": "c"
+    },
+    "room-c-volume-up": {
+      "alias": false,
+      "allowed": true,
+      "function": "volume-up",
+      "source": null,
+      "verified": true,
+      "zone": "c"
+    },
+    "room-d-mute": {
+      "alias": false,
+      "allowed": false,
+      "function": "mute",
+      "source": null,
+      "verified": false,
+      "zone": "d"
+    },
+    "room-d-power-off": {
+      "alias": false,
+      "allowed": false,
+      "function": "power-off",
+      "source": null,
+      "verified": false,
+      "zone": "d"
+    },
+    "room-d-power-on": {
+      "alias": false,
+      "allowed": false,
+      "function": "power-on",
+      "source": null,
+      "verified": false,
+      "zone": "d"
+    },
+    "room-d-source-am": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "am",
+      "verified": false,
+      "zone": "d"
+    },
+    "room-d-source-aux": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "aux",
+      "verified": false,
+      "zone": "d"
+    },
+    "room-d-source-cd": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "cd",
+      "verified": false,
+      "zone": "d"
+    },
+    "room-d-source-fm": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "fm",
+      "verified": false,
+      "zone": "d"
+    },
+    "room-d-source-tape": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "tape",
+      "verified": false,
+      "zone": "d"
+    },
+    "room-d-source-video-1": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "video-1",
+      "verified": false,
+      "zone": "d"
+    },
+    "room-d-source-video-2": {
+      "alias": false,
+      "allowed": false,
+      "function": "source",
+      "source": "video-2",
+      "verified": false,
+      "zone": "d"
+    },
+    "room-d-unmute": {
+      "alias": false,
+      "allowed": false,
+      "function": "unmute",
+      "source": null,
+      "verified": false,
+      "zone": "d"
+    },
+    "room-d-volume-down": {
+      "alias": false,
+      "allowed": false,
+      "function": "volume-down",
+      "source": null,
+      "verified": false,
+      "zone": "d"
+    },
+    "room-d-volume-up": {
+      "alias": false,
+      "allowed": false,
+      "function": "volume-up",
+      "source": null,
+      "verified": false,
+      "zone": "d"
+    },
+    "system-power-off": {
+      "alias": true,
+      "allowed": true,
+      "function": "power-off",
+      "source": null,
+      "verified": true,
+      "zone": "a"
+    },
+    "system-power-on": {
+      "alias": true,
+      "allowed": true,
+      "function": "power-on",
+      "source": null,
+      "verified": true,
+      "zone": "a"
+    },
+    "volume-down": {
+      "alias": true,
+      "allowed": true,
+      "function": "volume-down",
+      "source": null,
+      "verified": true,
+      "zone": "a"
+    }
+  },
+  "bridge": {
+    "config": "ok",
+    "fault": null,
+    "ir_attached": false,
+    "ir_configured": false,
+    "last_outcome": null,
+    "last_transmission": null,
+    "mode": "live",
+    "recovery": null,
+    "serial_open": true
+  },
+  "bridge_id": "0123456789abcdef0123456789abcdef",
+  "config": {
+    "ir": {
+      "zone": "a"
+    },
+    "sources": {
+      "am": true,
+      "aux": true,
+      "cd": false,
+      "fm": false,
+      "tape": false,
+      "video-1": true,
+      "video-2": true
+    },
+    "unverified": {
+      "a": false,
+      "b": false,
+      "c": false,
+      "d": false
+    },
+    "zones": {
+      "a": {
+        "enabled": true
+      },
+      "b": {
+        "enabled": true
+      },
+      "c": {
+        "enabled": true
+      },
+      "d": {
+        "enabled": false
+      }
+    }
+  },
+  "generated_at": 1791600000.0,
+  "ir": {
+    "learning": null,
+    "mute_state": null,
+    "profiles": {}
+  },
+  "rooms": {
+    "a": {
+      "mute": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      },
+      "power": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      },
+      "source": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      },
+      "volume": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      }
+    },
+    "b": {
+      "mute": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      },
+      "power": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      },
+      "source": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      },
+      "volume": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      }
+    },
+    "c": {
+      "mute": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      },
+      "power": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      },
+      "source": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      },
+      "volume": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      }
+    },
+    "d": {
+      "mute": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      },
+      "power": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      },
+      "source": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      },
+      "volume": {
+        "age": null,
+        "observed_at": null,
+        "supported": false,
+        "value": null
+      }
+    }
+  },
+  "schema": 4
+}

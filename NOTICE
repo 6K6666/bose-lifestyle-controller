@@ -1,0 +1,9 @@
+Bose Lifestyle Controller
+Copyright 2026 6K6666
+Copyright notices and attribution
+
+This product includes information from the RemoteCentral forum thread "Bose M1 Multi Room Interface" (https://www.remotecentral.com/cgi-bin/mboard/rc-theater/thread.cgi?2733): post 23 by cnb (2020-09-30), which describes the serial command set, and post 17 by Dave_247, which identifies the BO command. That information is used by link and paraphrase.
+
+The ETAP banner string that appears in the test fixtures is a minimal functional fixture. It is used only to check how the bridge reads the identify reply.
+
+Unofficial community project. Not affiliated with or endorsed by Bose Corporation. "Bose" and "Lifestyle" are trademarks of Bose Corporation, used here only to identify compatible products.

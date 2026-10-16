@@ -1,0 +1,24 @@
+{
+  "banner": "identified ETAP Interface V1.5; device 0001; read-only",
+  "bytes_hex": "4d 4d 20 34 32 2c 34 30 2c 30 31 2c 30 36 0a",
+  "classification": "transmitted-with-matching-response",
+  "expected_reply": "\r\r\r\r>.C24001060000\r",
+  "frames": [
+    {
+      "action": "room-a-source-tape",
+      "detail": "4d 4d 20 34 32 2c 34 30 2c 30 31 2c 30 36 0a",
+      "kind": "tx"
+    },
+    {
+      "action": "room-a-source-tape",
+      "detail": "0d 0d 0d 0d 3e 2e 43 32 34 30 30 31 30 36 30 30 30 30 0d",
+      "kind": "rx"
+    }
+  ],
+  "name": "room-a-source-tape",
+  "note": "From bridge journal frames and owner P1 confirmation, not harness run; banner is from identify earlier same day.",
+  "observation": "Owner pressed it in the HA dashboard; the P1 showed the selected source for this room.",
+  "outcome": "verified",
+  "reply": "transmitted room-a-source-tape; reply unverified; P1 confirmation required",
+  "timestamp": "2026-10-11"
+}

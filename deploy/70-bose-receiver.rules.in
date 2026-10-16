@@ -1,0 +1,3 @@
+# Rendered from this template by bose_receivers.render_udev_rule (install-bridge.sh). Edit the template, not the installed copy.
+# Gives the bridge's group read access to the one receiver it was installed for: vendor and product, plus serial when given.
+SUBSYSTEM=="input", KERNEL=="event*", ATTRS{idVendor}=="@VENDOR@", ATTRS{idProduct}=="@PRODUCT@"@SERIAL_MATCH@, GROUP="@GROUPS@", MODE="0640"
