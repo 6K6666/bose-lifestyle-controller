@@ -118,7 +118,7 @@ If not: a message that starts with "Nothing was changed" means the save was refu
 
 Where: Home Assistant, on the Bose Lifestyle Assistant integration, choosing Add remote.
 
-Expected: Home Assistant asks you to name the remote and then walks through its buttons. Volume up, Volume down and Mute are the only buttons that can be learned. For each button, point the remote at the receiver, select Listen, and press and release the button three times about one second apart. Learning sends no Bose commands. When you save, the learned buttons start disabled. Then open Configure remote and enable one button at a time, and test each one with the room.
+Expected: Home Assistant asks you to name the remote and then walks through its buttons. Volume up, Volume down and Mute are the only buttons that can be learned. For each button, point the remote at the receiver, select Listen, and press and release the button three times about one second apart. Learning sends no Bose commands. When you save, the remote and its learned buttons start disabled. Open Configure remote, turn on the remote's Enabled switch, then enable one learned button at a time and test each one with the room.
 
 If not: "Three matching presses have not been verified" means the presses did not match. Try again, pressing one button three times in a row. "This code belongs to a different button" means two buttons were pressed as one. Learn the buttons again, one at a time. Until a button is enabled, the remote does nothing for it.
 

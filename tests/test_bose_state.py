@@ -8,6 +8,7 @@ import tempfile
 import threading
 import socket
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -154,6 +155,39 @@ class State(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn('identity-not-recoverable', err)
         self.assertEqual(self.path.read_bytes(), b'{"bridge_id":"' + IDENTITY.encode() + b'","profiles":' + nested + b'}')
+
+    def test_identity_scanner_rejects_deep_values_independent_of_json_runtime_limit(self):
+        nested = b'[' * 300 + b']' * 300
+        self.assertIsNone(bose_state._value_end(nested, 0))
+
+    def test_oversized_json_integer_does_not_escape_recovery(self):
+        digits = b'9' * 5000
+        original_loads = bose_state.json.loads
+
+        def limited_loads(document, *args, **kwargs):
+            encoded = document if isinstance(document, bytes) else str(document).encode()
+            if digits in encoded:
+                raise ValueError('simulated integer digit limit')
+            return original_loads(document, *args, **kwargs)
+
+        for profiles in (digits, b'[' + digits + b']'):
+            with self.subTest(nested=profiles.startswith(b'[')):
+                damaged = b'{"bridge_id":"' + IDENTITY.encode() + b'","profiles":' + profiles + b'}'
+                self.path.write_bytes(damaged)
+                with patch.object(bose_state.json, 'loads', side_effect=limited_loads):
+                    state = bose_state.inspect(self.path)
+                    self.assertFalse(state['ok'])
+                    self.assertFalse(state['identity_recoverable'])
+                    code, _, err = run(['state', 'reset', '--keep-identity', '--yes'], self.dir)
+                    self.assertEqual(code, 1)
+                    self.assertIn('identity-not-recoverable', err)
+                    self.assertEqual(self.path.read_bytes(), damaged)
+                    code, _, err = run(['state', 'reset', '--new-identity', '--yes'], self.dir)
+                    self.assertEqual(code, 0, err)
+                state = bose_state.json.loads(self.path.read_bytes())
+                self.assertNotEqual(state['bridge_id'], IDENTITY)
+                self.assertEqual(state['profiles'], {})
+                self.assertTrue(any(p.read_bytes() == damaged for p in self.dir.glob('ir-state.json.damaged-*')))
 
     def test_reset_new_identity_is_explicit_and_different(self):
         self.path.write_bytes(DAMAGED)

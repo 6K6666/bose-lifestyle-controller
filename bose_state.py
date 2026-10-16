@@ -15,6 +15,7 @@ from bose_ir import IRStateError, RemoteManager
 IDENTITY = re.compile(rb'"([0-9a-f]{32})"')   # matched on the raw bytes: a damaged byte inside the id must not be skipped
 TRUNCATED = object()
 INCOMPLETE_LITERALS = (b'n', b'nu', b'nul', b't', b'tr', b'tru', b'f', b'fa', b'fal', b'fals')
+_MAX_JSON_NESTING = 256  # shortcut: state JSON is shallow; raise only if a supported format needs more.
 
 
 def _string_end(data: bytes, start: int):
@@ -45,7 +46,7 @@ def _value_end(data: bytes, start: int):
         if end is None or end is TRUNCATED:
             return end
         try: json.loads(data[start:end])
-        except (UnicodeDecodeError, json.JSONDecodeError, RecursionError): return None
+        except (UnicodeDecodeError, ValueError, RecursionError): return None
         return end
     if data[start] not in (123, 91):
         end = start
@@ -55,7 +56,7 @@ def _value_end(data: bytes, start: int):
         if end == len(data) and data[start:end] in INCOMPLETE_LITERALS:
             return TRUNCATED
         try: json.loads(data[start:end])
-        except (UnicodeDecodeError, json.JSONDecodeError, RecursionError): return None
+        except (UnicodeDecodeError, ValueError, RecursionError): return None
         return end if end < len(data) else TRUNCATED
     stack = [125 if data[start] == 123 else 93]
     i = start + 1
@@ -67,10 +68,9 @@ def _value_end(data: bytes, start: int):
                 return end
             i = end
             continue
-        if byte == 123:
-            stack.append(125)
-        elif byte == 91:
-            stack.append(93)
+        if byte in (123, 91):
+            if len(stack) >= _MAX_JSON_NESTING: return None
+            stack.append(125 if byte == 123 else 93)
         elif byte in (125, 93):
             if byte != stack[-1]:
                 return None
@@ -78,7 +78,7 @@ def _value_end(data: bytes, start: int):
         i += 1
     if stack: return TRUNCATED
     try: json.loads(data[start:i])
-    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError): return None
+    except (UnicodeDecodeError, ValueError, RecursionError): return None
     return i
 
 
@@ -106,7 +106,7 @@ def _raw_identity(path: Path) -> Optional[str]:
         if key_end is None: return None
         if key_end is TRUNCATED: break
         try: key = json.loads(data[i:key_end].decode('utf-8'))
-        except (UnicodeDecodeError, json.JSONDecodeError, RecursionError): return None
+        except (UnicodeDecodeError, ValueError, RecursionError): return None
         after_comma = False
         i = key_end
         while i < len(data) and data[i] in b' \t\r\n': i += 1

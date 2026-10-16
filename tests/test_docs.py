@@ -136,6 +136,13 @@ class DocsTests(unittest.TestCase):
         self.assertIn('If the card is already on the dashboard, continue.', card_step)
         self.assertNotIn('optional', card_step.lower())
 
+    def test_remote_setup_enables_remote_before_individual_buttons(self):
+        text = read('docs/install.md')
+        step = text.split('### Step A9: Teach the remote\'s buttons', 1)[1].split('### Step A10:', 1)[0]
+        self.assertIn("turn on the remote's Enabled switch", step)
+        self.assertLess(step.index("turn on the remote's Enabled switch"),
+                        step.index('enable one learned button at a time'))
+
     def test_no_private_strings_or_brands_outside_allowed_pages(self):
         shapes = [line for line in read('tools/neutral_shapes.txt').splitlines() if line.strip() and not line.startswith('#')]
         brand = re.compile('|'.join(re.escape(b) for b in BRANDS), re.IGNORECASE)
