@@ -1,10 +1,16 @@
 # Bose Lifestyle Assistant
 
+> **Disclaimer:** This project was made using Codex and Claude Code. Usage has been extensively tested on Zones A, B, and C, but malfunctions and other issues are possible. Use it at your own risk. I do not assume liability for loss, damage, or other consequences resulting from its use.
+
 ![Bose Lifestyle Assistant](docs/assets/banner.png)
 
-This project is for Bose Lifestyle systems that are controlled over the serial port of the Bose control unit (the ETAP serial interface). A small bridge program runs on a Linux computer, the bridge computer. You control the system from Home Assistant. The command line on the bridge computer configures and checks the bridge; it does not send daily power, source or volume commands. Those come from Home Assistant; a learned infrared remote provides volume and mute only, and the original Bose remote covers everything else.
+This project currently targets the Bose Lifestyle 50/M1 through the control unit's ETAP serial interface. A small bridge program runs on a Linux computer, the bridge computer. You control the system from Home Assistant. The command line on the bridge computer configures and checks the bridge; it does not send daily power, source or volume commands. Those come from Home Assistant; a learned infrared remote provides volume and mute only, and the original Bose remote covers everything else.
 
 This project covers Lifestyle systems over the serial port only; newer Bose speakers use a different protocol and are not supported.
+
+## Help Wanted
+
+Have an active, working Zone D? We need your help testing it and improving support. We also welcome research into other Lifestyle systems with documented serial control. See [Help Wanted](docs/help-wanted.md) for testing requests, compatibility leads, and how to contribute.
 
 ## Documentation
 
