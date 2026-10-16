@@ -1,4 +1,4 @@
-"""Bose Lifestyle Controller: bridge-authoritative mappings and one serial writer."""
+"""Bose Lifestyle Assistant: bridge-authoritative mappings and one serial writer."""
 from datetime import timedelta
 import json
 import logging
@@ -40,7 +40,7 @@ async def async_setup(hass,config):
 
 class Coordinator(DataUpdateCoordinator):
     def __init__(self,hass,entry):
-        super().__init__(hass,_LOGGER,name='Bose Lifestyle Controller',config_entry=entry,update_interval=timedelta(seconds=5))
+        super().__init__(hass,_LOGGER,name='Bose Lifestyle Assistant',config_entry=entry,update_interval=timedelta(seconds=5))
         self.client=Client(entry.data,config_dir=Path(hass.config.config_dir))   # the same directory the pairing flow keys and pins under
         self.read_at=0
         self._fault=None
@@ -88,12 +88,12 @@ async def async_setup_entry(hass,entry):
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data=coordinator
     devices=dr.async_get(hass)
-    bridge=devices.async_get_or_create(config_entry_id=entry.entry_id,config_subentry_id=group(entry,'controller').subentry_id,identifiers={(DOMAIN,entry.unique_id)},name='Bose Controller',manufacturer='Bose Lifestyle Controller',model='Controller')
+    bridge=devices.async_get_or_create(config_entry_id=entry.entry_id,config_subentry_id=group(entry,'controller').subentry_id,identifiers={(DOMAIN,entry.unique_id)},name='Bose Controller',manufacturer='Bose',model='Controller')
     bridge_name=stored_bridge_name(await hass.data[DOMAIN]['store'].async_load())
     if bridge_name!=DEFAULT_BRIDGE_NAME: devices.async_update_device(bridge.id,name_by_user=bridge_name)   # a stored nickname is put back after the device is recreated
     for room,name in (('a','Zone A'),('b','Zone B'),('c','Zone C'),('d','Zone D')):
         devices.async_get_or_create(config_entry_id=entry.entry_id,config_subentry_id=group(entry,'zones').subentry_id,identifiers={(DOMAIN,f'{entry.unique_id}_room_{room}')},
-                                    name=name,manufacturer='Bose Lifestyle Controller',model='Zone',
+                                    name=name,manufacturer='Bose',model='Zone',
                                     via_device_id=bridge.id)
     entry.async_on_unload(entry.add_update_listener(async_reload))
     await hass.config_entries.async_forward_entry_setups(entry,PLATFORMS)

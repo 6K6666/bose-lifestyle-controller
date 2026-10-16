@@ -8,7 +8,7 @@ Removing the bridge stops room control. Tell the household first, and make sure 
 
 Where: Home Assistant and its configuration folder.
 
-1. Delete the integration. In Home Assistant, open Settings, Devices and services, Bose Lifestyle Controller, and choose Delete. This removes the integration's entries, its entities and its remote entries.
+1. Delete the integration. In Home Assistant, open Settings, Devices and services, Bose Lifestyle Assistant, and choose Delete. This removes the integration's entries, its entities and its remote entries.
 2. Delete the integration's files: the `custom_components/bose_lifestyle` folder in the configuration folder. If you installed the integration with a tool, remove it with that tool instead.
 3. Delete the pairing files in the `.ssh` folder of the configuration folder:
    - `.ssh/bose_ed25519`, the private pairing key.
@@ -17,7 +17,7 @@ Where: Home Assistant and its configuration folder.
 4. Delete `.storage/bose_lifestyle.rooms`. Deleting the integration does not remove this file. It holds the room names, input nicknames and icons.
 5. Restart Home Assistant itself.
 
-Expected: the Bose Lifestyle Controller integration no longer appears under Devices and services.
+Expected: the Bose Lifestyle Assistant integration no longer appears under Devices and services.
 
 If not: if the integration is still listed, delete it again from its page. Do not restart or power-cycle the Bose unit.
 

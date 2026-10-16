@@ -20,7 +20,7 @@ EXCLUDED_NAMES = (
     'config.json', '*config.json', '*-state.json', '*_state.json', 'state.json',
     '*-2026*.json', '*continuation*', '*dashboard*',
 )
-DISPLAY_NAME = 'Bose Lifestyle Controller'   # the one place the public display name is written
+DISPLAY_NAME = 'Bose Lifestyle Assistant'   # the one place the public display name is written
 BAD_MODES = {'120000', '160000'}   # symlink, submodule
 
 

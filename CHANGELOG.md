@@ -1,4 +1,4 @@
-# Bose Lifestyle Controller changelog
+# Bose Lifestyle Assistant changelog
 
 All notable changes to this project are documented in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
@@ -14,7 +14,7 @@ All notable changes to this project are documented in this file. The format foll
 
 - Volume presses in Rooms A, B and C share the same quarter-second pacing.
 
-## [1.0.0] - 2026-10-15
+## [1.0.0] - 2026-10-16
 
 ### Added
 

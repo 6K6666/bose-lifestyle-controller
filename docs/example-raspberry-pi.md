@@ -149,7 +149,7 @@ If not: press Ctrl-C to stop. Nothing is saved until you type `y` at the review.
 
 Where: Home Assistant. Enter `bridge.example.invalid`, the user `bose` and port 22. Compare the fingerprint on the screen with the `SHA256:` value from step 8, then confirm.
 
-Expected: the integration is created. Continue with [Install](install.md), step A7, to set up rooms and inputs.
+Expected: the integration is created. Continue with [Install](install.md), step A7 to add the card, then step A8 to set up rooms and inputs.
 
 ## Step 12: Turn on a room and check it
 

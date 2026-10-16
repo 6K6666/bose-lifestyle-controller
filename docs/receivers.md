@@ -52,7 +52,7 @@ Expected: `Saved receiver` followed by the name and the path of `ir-config.json`
 sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle ir target a
 ```
 
-**How presses are matched.** The bridge opens the receiver named in `ir-config.json`. It matches each press's scan code against the buttons you taught: Volume up, Volume down and Mute. You teach them with `ir learn` on the command line, or with **Add remote** in the Bose Lifestyle Controller integration. Both use the same steps. A taught button does nothing until it is turned on. The three key codes saved by `ir select` are stored, but the bridge does not use them to match presses.
+**How presses are matched.** The bridge opens the receiver named in `ir-config.json`. It matches each press's scan code against the buttons you taught: Volume up, Volume down and Mute. You teach them with `ir learn` on the command line, or with **Add remote** in the Bose Lifestyle Assistant integration. Both use the same steps. A taught button does nothing until it is turned on. The three key codes saved by `ir select` are stored, but the bridge does not use them to match presses.
 
 ## Teach the remote's buttons
 

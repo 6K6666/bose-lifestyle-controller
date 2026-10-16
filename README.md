@@ -1,6 +1,6 @@
-# Bose Lifestyle Controller
+# Bose Lifestyle Assistant
 
-![Bose Lifestyle Controller](docs/assets/banner.png)
+![Bose Lifestyle Assistant](docs/assets/banner.png)
 
 This project is for Bose Lifestyle systems that are controlled over the serial port of the Bose control unit (the ETAP serial interface). A small bridge program runs on a Linux computer, the bridge computer. You control the system from Home Assistant. The command line on the bridge computer configures and checks the bridge; it does not send daily power, source or volume commands. Those come from Home Assistant; a learned infrared remote provides volume and mute only, and the original Bose remote covers everything else.
 

@@ -23,13 +23,13 @@ Values written in capitals, such as `PLACEHOLDER`, are yours to replace. Command
 
 Where: the Home Assistant configuration folder.
 
-Expected: copy the `custom_components/bose_lifestyle` folder from the project into the Home Assistant configuration folder. Then Settings, Devices and services, Add integration, and searching for "Bose Lifestyle Controller" finds the integration.
+Expected: copy the `custom_components/bose_lifestyle` folder from the project into the Home Assistant configuration folder. Then Settings, Devices and services, Add integration, and searching for "Bose Lifestyle Assistant" finds the integration.
 
 If not: check that the folder is at `custom_components/bose_lifestyle` inside the configuration folder, then restart Home Assistant. Restart Home Assistant itself; never restart or power-cycle the Bose unit.
 
 ### Step A2: Start pairing and copy the key command
 
-Where: Home Assistant, Add integration, Bose Lifestyle Controller.
+Where: Home Assistant, Add integration, Bose Lifestyle Assistant.
 
 Expected: the screen "Pair the bridge computer" shows a command that starts with `sh install-bridge.sh --public-key`. Keep this screen open. Use its public key in step A3. The displayed command has placeholders for the user and the serial path, and it has no `sudo` and no receiver options. Use the command in step A3, which includes all of them.
 
@@ -60,7 +60,7 @@ sudo -u bose -g RECEIVER-GROUP /opt/bose-lifestyle/bin/bose-lifestyle ir select 
 sudo sh install-bridge.sh --public-key 'PASTE-THE-PUBLIC-KEY-FROM-STEP-A2' --user bose --serial-device /dev/serial/by-id/usb-PLACEHOLDER-if00-port0 --receiver-device /dev/input/by-id/usb-PLACEHOLDER-event-kbd --receiver-vendor 0000 --receiver-product 0000
 ```
 
-Replace `0000` with the receiver's vendor and product IDs, and use the receiver path from `ir list`. Save the receiver before you start the bridge, because the service expects the saved receiver file at startup. Then step A8 teaches the remote's buttons (or step B8 on the command line route).
+Replace `0000` with the receiver's vendor and product IDs, and use the receiver path from `ir list`. Save the receiver before you start the bridge, because the service expects the saved receiver file at startup. Then step A9 teaches the remote's buttons (or step B8 on the command line route).
 
 If not: if `ir select` says `Only a receiver with a /dev/input/by-id/ path` or `That device does not report key presses`, pick a receiver from `ir list`. See [Receivers](receivers.md).
 
@@ -80,7 +80,7 @@ If not: if the service is not active, run `journalctl -u bose-bridge.service -n 
 
 ### Step A6: Finish pairing in Home Assistant
 
-Where: Home Assistant, on the Bose Lifestyle Controller pairing screens from step A2. The bridge must be running (step A5) before you finish this step.
+Where: Home Assistant, on the Bose Lifestyle Assistant pairing screens from step A2. The bridge must be running (step A5) before you finish this step.
 
 Expected: enter the bridge computer's address, the SSH user (`bose` by default) and the SSH port (22 is usual). Home Assistant then shows a fingerprint. Compare it with the fingerprint line from step A3. The integration is created when the two match.
 
@@ -90,17 +90,33 @@ If the installer printed `Bridge host key fingerprint: on the bridge host run ss
 
 If not: a mismatch means nothing was saved. Run the fingerprint check again from step A3 and try once more. A connection error means the bridge computer is not reachable or the bridge is not running. See [Fix a problem](fix-a-problem.md).
 
-### Step A7: Set up rooms and inputs
+### Step A7: Add the card to a dashboard
 
-Where: Home Assistant, the Bose Lifestyle Controller dashboard. On a fresh install, a Finish setup button is shown to administrators. Otherwise use the settings control, then Set up rooms and inputs.
+Where: Home Assistant, a dashboard in edit mode.
+
+Expected: the card is listed as "Bose Lifestyle Assistant" in the card picker. A Home Assistant restart and a dashboard reload may be needed before it appears. Add it, or add a card with this YAML:
+
+```
+type: custom:bose-control-card
+```
+
+The card takes no YAML options. It ignores any other setting in the card configuration, so do not add a title or an entity list. Room names, inputs, and the room the infrared remote controls are set from the card's own settings screens. The remote's buttons are taught in Home Assistant with Add remote (step A9), or on the command line with `ir learn`.
+
+If the card is already on the dashboard, continue.
+
+If not: if Bose Lifestyle Assistant is missing from the picker, check that step A1 finished, then restart Home Assistant. The integration adds the card file to the browser when Home Assistant starts, so reload the dashboard page after the restart. If it still does not appear, check the Home Assistant log for a warning from the Bose Lifestyle Assistant integration.
+
+### Step A8: Set up rooms and inputs
+
+Where: Home Assistant, the Bose Lifestyle Assistant dashboard. On a fresh install, a Finish setup button is shown to administrators. Otherwise use the settings control, then Set up rooms and inputs.
 
 Expected: the screen "Rooms and inputs" lists each room with a name field and an "Enable app control for this room" switch. It also lists each input with a switch named after its jack, a nickname field and an icon. Turn on the rooms you have and connect the inputs they use. The screen says that only connected inputs appear in the daily controls. Room on/off and connected inputs are stored on the bridge computer. Names, nicknames and icons are stored in Home Assistant.
 
 If not: a message that starts with "Nothing was changed" means the save was refused, so try again. A message that says "We couldn't confirm that change" means the save may have been stored: check the settings before you change them again. See [Fix a problem](fix-a-problem.md).
 
-### Step A8: Teach the remote's buttons (only if you have a receiver)
+### Step A9: Teach the remote's buttons (only if you have a receiver)
 
-Where: Home Assistant, on the Bose Lifestyle Controller integration, choosing Add remote.
+Where: Home Assistant, on the Bose Lifestyle Assistant integration, choosing Add remote.
 
 Expected: Home Assistant asks you to name the remote and then walks through its buttons. Volume up, Volume down and Mute are the only buttons that can be learned. For each button, point the remote at the receiver, select Listen, and press and release the button three times about one second apart. Learning sends no Bose commands. When you save, the learned buttons start disabled. Then open Configure remote and enable one button at a time, and test each one with the room.
 
@@ -108,27 +124,13 @@ If not: "Three matching presses have not been verified" means the presses did no
 
 The command line teaches the same buttons with the same steps (step B8). See [Receivers](receivers.md) for how presses are matched.
 
-### Step A9: Check one room
+### Step A10: Check one room
 
-Where: Home Assistant, the room you turned on in step A7, and the room itself.
+Where: Home Assistant, the room you turned on in step A8, and the room itself.
 
 Expected: turn the room on with the card, and the Bose unit responds as it does to its own remote. The card shows a "Last sent" label after a successful press.
 
 If not: messages on the card are listed in [Everyday use](everyday-use.md) and [Fix a problem](fix-a-problem.md). Do not press the same control repeatedly.
-
-### Step A10: Add the card to a dashboard (optional)
-
-Where: Home Assistant, a dashboard in edit mode.
-
-Expected: the card is listed as "Bose Lifestyle Controller" in the card picker. A Home Assistant restart and a dashboard reload may be needed before it appears. Add it, or add a card with this YAML:
-
-```
-type: custom:bose-control-card
-```
-
-The card takes no YAML options. It ignores any other setting in the card configuration, so do not add a title or an entity list. Room names, inputs, and the room the infrared remote controls are set from the card's own settings screens. The remote's buttons are taught in Home Assistant with Add remote (step A8), or on the command line with `ir learn`.
-
-If not: if Bose Lifestyle Controller is missing from the picker, check that step A1 finished, then restart Home Assistant. The integration adds the card file to the browser when Home Assistant starts, so reload the dashboard page after the restart. If it still does not appear, check the Home Assistant log for a warning from the Bose Lifestyle Controller integration.
 
 ## Route B: Command line only
 

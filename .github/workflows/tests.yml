@@ -24,6 +24,6 @@ jobs:
           python -m venv "$RUNNER_TEMP/ha-venv"
           "$RUNNER_TEMP/ha-venv/bin/pip" install -q -r requirements-ha-test.txt
           for t in integration transport compat pairing pairing_flow; do
-            "$RUNNER_TEMP/ha-venv/bin/python" -B "test_bose_$t.py"
+            "$RUNNER_TEMP/ha-venv/bin/python" -B "tests/test_bose_$t.py"
           done
-          "$RUNNER_TEMP/ha-venv/bin/python" -B test_build_artifact.py
+          "$RUNNER_TEMP/ha-venv/bin/python" -B tests/test_build_artifact.py

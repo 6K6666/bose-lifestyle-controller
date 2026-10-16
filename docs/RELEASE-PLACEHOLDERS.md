@@ -1,6 +1,6 @@
 # Release placeholders
 
-Every `[[...]]` placeholder in the documentation, the README and the NOTICE must be filled in before a release. The release gate requires this table to be empty of placeholders: each row is removed once its text is filled in, and the lint in `test_docs.py` checks that every placeholder in the documents is listed here.
+Every `[[...]]` placeholder in the documentation, the README and the NOTICE must be filled in before a release. The release gate requires this table to be empty of placeholders: each row is removed once its text is filled in, and the lint in `tests/test_docs.py` checks that every placeholder in the documents is listed here.
 
 This file is the one place where placeholders are allowed to appear, because it lists them.
 

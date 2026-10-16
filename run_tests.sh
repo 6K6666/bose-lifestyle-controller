@@ -38,7 +38,14 @@ DIRTY=false
 if [ -n "$(git status --porcelain)" ]; then DIRTY=true; fi
 SUITES=
 PYX=python3
-pyt() { "$PYX" -B "$1"; SUITES="$SUITES $1"; }
+pyt() {
+  case "$1" in
+    maintainer/*) test_file=$1 ;;
+    *) test_file="tests/$1" ;;
+  esac
+  "$PYX" -B "$test_file"
+  SUITES="$SUITES $1"
+}
 words() { set -- $1; echo $#; }
 # Planned count: every suite this mode runs, the card test included whether or not node is present.
 PLANNED=$(( $(words "$STDLIB_SUITES") + $(words "$CARD_SUITE") ))
@@ -67,7 +74,7 @@ if [ -d maintainer ]; then
   for t in $MAINTAINER_GLOB; do pyt "$t"; done
 fi
 if command -v node >/dev/null 2>&1; then
-  node test_bose_card.js
+  node tests/test_bose_card.js
   SUITES="$SUITES $CARD_SUITE"
 else
   echo "node not found; the card test is planned but did not run"

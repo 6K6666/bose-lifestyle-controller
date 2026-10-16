@@ -245,9 +245,9 @@ def c_placeholders(g):
 
 def c_docs_lint(g):
     tree = g.head_tree()
-    script = tree / 'test_docs.py'
+    script = tree / 'tests' / 'test_docs.py'
     if not script.is_file():
-        return False, 'test_docs.py missing'
+        return False, 'tests/test_docs.py missing'
     run = subprocess.run([sys.executable, '-B', str(script)], cwd=str(tree), capture_output=True)
     return run.returncode == 0, f'docs lint exit {run.returncode}'
 

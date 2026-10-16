@@ -115,7 +115,7 @@ Restart the bridge service only for separate service maintenance: `sudo systemct
 
 ### Home Assistant pairing messages
 
-These messages appear in the Bose Lifestyle Controller setup in Home Assistant. Nothing is saved when a message says "Nothing was saved" or "No command was retried".
+These messages appear in the Bose Lifestyle Assistant setup in Home Assistant. Nothing is saved when a message says "Nothing was saved" or "No command was retried".
 
 | Message (short form) | Cause and fix |
 |---|---|

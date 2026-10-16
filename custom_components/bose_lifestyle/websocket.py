@@ -113,7 +113,7 @@ async def set_room(hass, entry, change, user='unknown'):
 @websocket_api.async_response
 async def ws_layout(hass, connection, msg):
     entry = loaded_entry(hass)
-    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Controller is not ready')
+    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Assistant is not ready')
     connection.send_result(msg['id'], await layout(hass, entry))
 
 
@@ -122,7 +122,7 @@ async def ws_layout(hass, connection, msg):
 @websocket_api.async_response
 async def ws_settings(hass, connection, msg):
     entry = loaded_entry(hass)
-    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Controller is not ready')
+    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Assistant is not ready')
     connection.send_result(msg['id'], await settings_payload(hass, entry))
 
 
@@ -132,7 +132,7 @@ async def ws_settings(hass, connection, msg):
 @websocket_api.async_response
 async def ws_set_room(hass, connection, msg):
     entry = loaded_entry(hass)
-    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Controller is not ready')
+    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Assistant is not ready')
     try:
         result = await set_room(hass, entry, {k: v for k, v in msg.items() if k not in ('id', 'type')}, connection.user.name)
     except ValueError:
@@ -147,7 +147,7 @@ async def ws_set_room(hass, connection, msg):
 @websocket_api.async_response
 async def ws_set_ir_zone(hass, connection, msg):
     entry = loaded_entry(hass)
-    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Controller is not ready')
+    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Assistant is not ready')
     coordinator = entry.runtime_data
     if msg['zone'] not in ROOM_IDS: return connection.send_error(msg['id'], 'invalid_request', 'Invalid IR target')
     try:
@@ -165,7 +165,7 @@ async def ws_set_ir_zone(hass, connection, msg):
 @websocket_api.async_response
 async def ws_set_volume_steps(hass, connection, msg):
     entry = loaded_entry(hass)
-    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Controller is not ready')
+    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Assistant is not ready')
     coordinator = entry.runtime_data
     steps = msg['steps']
     if type(steps) is not int or not 1 <= steps <= MAX_VOLUME_STEPS:
@@ -184,7 +184,7 @@ async def ws_set_volume_steps(hass, connection, msg):
 @websocket_api.async_response
 async def ws_set_source(hass, connection, msg):
     entry = loaded_entry(hass)
-    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Controller is not ready')
+    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Assistant is not ready')
     coordinator = entry.runtime_data
     if msg['source'] not in SOURCES: return connection.send_error(msg['id'], 'invalid_request', 'Invalid input')
     try:
@@ -201,7 +201,7 @@ async def ws_set_source(hass, connection, msg):
 @websocket_api.async_response
 async def ws_set_experimental(hass, connection, msg):
     entry = loaded_entry(hass)
-    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Controller is not ready')
+    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Assistant is not ready')
     coordinator = entry.runtime_data
     if msg['room'] not in ROOM_IDS: return connection.send_error(msg['id'], 'invalid_request', 'Invalid room')
     try:
@@ -218,7 +218,7 @@ async def ws_set_experimental(hass, connection, msg):
 @websocket_api.async_response
 async def ws_set_room_name(hass, connection, msg):
     entry = loaded_entry(hass)
-    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Controller is not ready')
+    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Assistant is not ready')
     room = msg['room']
     if room not in ROOM_IDS: return connection.send_error(msg['id'], 'invalid_request', 'Invalid room')
     rooms = await load_rooms(hass)
@@ -239,7 +239,7 @@ async def ws_set_room_name(hass, connection, msg):
 async def ws_set_bridge_name(hass, connection, msg):
     """Nickname for the bridge computer. A missing or null name clears it; a blank one is refused, never saved."""
     entry = loaded_entry(hass)
-    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Controller is not ready')
+    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Assistant is not ready')
     try:
         name = clean_bridge_name(msg.get('name'))
     except ValueError as error:
@@ -257,7 +257,7 @@ async def ws_set_bridge_name(hass, connection, msg):
 async def ws_set_input(hass, connection, msg):
     """Nickname and icon for one input. A field left out keeps its stored value; null means the default for that field."""
     entry = loaded_entry(hass)
-    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Controller is not ready')
+    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Assistant is not ready')
     try:
         change = clean_input_change(msg['source'], {key: msg[key] for key in ('name', 'icon') if key in msg})
     except ValueError as error:
@@ -274,7 +274,7 @@ async def ws_set_input(hass, connection, msg):
 async def ws_set_ir_receiver_label(hass, connection, msg):
     """Where the IR receiver is: a label kept in the HA Store only. A missing or null label clears it; the bridge is never asked."""
     entry = loaded_entry(hass)
-    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Controller is not ready')
+    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Assistant is not ready')
     try:
         label = clean_ir_label(msg.get('label'))
     except ValueError as error:
@@ -289,7 +289,7 @@ async def ws_set_ir_receiver_label(hass, connection, msg):
 @websocket_api.async_response
 async def ws_events(hass, connection, msg):
     entry = loaded_entry(hass)
-    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Controller is not ready')
+    if entry is None: return connection.send_error(msg['id'], 'not_ready', 'Bose Lifestyle Assistant is not ready')
     try:
         events = await entry.runtime_data.client.events(msg.get('limit', 50))
     except BridgeError as error:

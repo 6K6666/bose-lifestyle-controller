@@ -17,7 +17,8 @@ from subst import subst, token_pattern  # noqa: E402
 COMPONENT_ROOT = 'custom_components'
 DOMAIN_RE = re.compile(r'[a-z][a-z0-9_]*')
 ROOT_MODULES = ('bose_commands.py', 'bose_events.py', 'bose_ir.py', 'bose_request.py')
-HA_SUITES = ('test_bose_integration.py', 'test_bose_transport.py', 'test_bose_compat.py')
+HA_SUITES = ('tests/test_bose_integration.py', 'tests/test_bose_transport.py', 'tests/test_bose_compat.py')
+TEST_SUPPORT = ('tests/_bootstrap.py',)
 TEST_DIRS = ('tests/fixtures',)
 SKIP_PARTS = {'__pycache__'}
 
@@ -84,8 +85,8 @@ def build(src, dst, domain):
         raise ValueError(f'invalid domain: {domain!r}')
     token = _source_token(src)
     rels = _walk(src, f'{COMPONENT_ROOT}/{token}')
-    rels += [Path(m) for m in ROOT_MODULES + HA_SUITES]
-    for m in ROOT_MODULES + HA_SUITES:
+    rels += [Path(m) for m in ROOT_MODULES + HA_SUITES + TEST_SUPPORT]
+    for m in ROOT_MODULES + HA_SUITES + TEST_SUPPORT:
         _check_file(src, Path(m))
     for d in TEST_DIRS:
         rels += _walk(src, d)

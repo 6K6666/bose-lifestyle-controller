@@ -1,5 +1,5 @@
 {
-  "title": "Bose Lifestyle Controller",
+  "title": "Bose Lifestyle Assistant",
   "config": {
     "step": {
       "key": {
@@ -92,7 +92,6 @@
         "review": {
           "title": "Save {name}",
           "description": "{mappings}\n\nSaving disables every learned or relearned button. After saving, Configure remote to enable one button at a time, then turn on the remote Enabled switch for physical acceptance.",
-          "last_step": true,
           "submit": "Save remote"
         },
         "check": {
@@ -139,7 +138,6 @@
         "delete": {
           "title": "Delete remote profile",
           "description": "This removes all saved mappings for this remote from the bridge computer. Removing the HA registration alone keeps them.",
-          "last_step": true,
           "submit": "Delete remote profile"
         }
       },
@@ -173,13 +171,43 @@
     "controller": {
       "title": "Controller",
       "abort": {
-        "managed_in_card": "Open the Bose Lifestyle Controller card settings to manage this group."
+        "managed_in_card": "Open the Bose Lifestyle Assistant card settings to manage this group."
+      },
+      "entry_type": "Controller",
+      "initiate_flow": {
+        "user": "Manage in card",
+        "reconfigure": "Manage in card"
+      },
+      "step": {
+        "user": {
+          "title": "Controller settings",
+          "description": "Open the Bose Lifestyle Assistant card settings to manage this group."
+        },
+        "reconfigure": {
+          "title": "Controller settings",
+          "description": "Open the Bose Lifestyle Assistant card settings to manage this group."
+        }
       }
     },
     "zones": {
       "title": "Zones",
       "abort": {
-        "managed_in_card": "Open the Bose Lifestyle Controller card settings to manage this group."
+        "managed_in_card": "Open the Bose Lifestyle Assistant card settings to manage this group."
+      },
+      "entry_type": "Zones",
+      "initiate_flow": {
+        "user": "Manage in card",
+        "reconfigure": "Manage in card"
+      },
+      "step": {
+        "user": {
+          "title": "Zones settings",
+          "description": "Open the Bose Lifestyle Assistant card settings to manage this group."
+        },
+        "reconfigure": {
+          "title": "Zones settings",
+          "description": "Open the Bose Lifestyle Assistant card settings to manage this group."
+        }
       }
     }
   },

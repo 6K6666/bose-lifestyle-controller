@@ -1,4 +1,4 @@
-/* Bose Lifestyle Controller card: iOS-style room cards, settings sheet and view strategy. One file, no dependencies, no build step. */
+/* Bose Lifestyle Assistant card: iOS-style room cards, settings sheet and view strategy. One file, no dependencies, no build step. */
 (function () {
   'use strict';
 
@@ -202,15 +202,15 @@
 
   const CONFIRM_D = "Room D commands have never been tested on the Bose control unit. Only turn this on once a Room D zone is connected. The Bose control unit may refuse them, and an unexpected or missing reply stops all Bose control until someone investigates. Enable Room D?";
   const STORE_KEY = 'bose_lifestyle.open_room';
-  const NOT_READY = "Bose Lifestyle Controller isn't ready";
+  const NOT_READY = "Bose Lifestyle Assistant isn't ready";
   const UNAVAILABLE = 'Sound controls are unavailable. Use the Bose remote.';
 
   function generateView() {
-    return { title: 'Bose Lifestyle Controller', cards: [{ type: 'custom:bose-control-card' }] };
+    return { title: 'Bose Lifestyle Assistant', cards: [{ type: 'custom:bose-control-card' }] };
   }
 
   function generateDashboard() {
-    return { views: [{ title: 'Bose Lifestyle Controller', path: 'bose', icon: 'mdi:speaker', cards: [generateView().cards[0]] }] };
+    return { views: [{ title: 'Bose Lifestyle Assistant', path: 'bose', icon: 'mdi:speaker', cards: [generateView().cards[0]] }] };
   }
 
   const MANAGE_DEFAULT = '/config/integrations/integration/bose_lifestyle';
@@ -1087,5 +1087,5 @@
   defineElement('ll-strategy-view-bose-control', BoseStrategyView);
   defineElement('ll-strategy-dashboard-bose-control', BoseStrategyDashboard);
   window.customCards = window.customCards || [];
-  window.customCards.push({ type: 'bose-control-card', name: 'Bose Lifestyle Controller', description: 'Room controls for Bose Lifestyle systems. Unofficial, not affiliated with Bose.' });
+  window.customCards.push({ type: 'bose-control-card', name: 'Bose Lifestyle Assistant', description: 'Room controls for Bose Lifestyle systems. Unofficial, not affiliated with Bose.' });
 })();
