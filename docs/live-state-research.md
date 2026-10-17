@@ -37,7 +37,7 @@ The public [M1](https://fccid.io/A94-M1) and P1 FCC material provides manuals, p
 
 The [Bose Lifestyle 40/50 service manual](https://audiocircuit.dk/downloads/bose/Bose-LifestyleLS40-mc-sm.pdf) provides board and component information. Earlier research identified these possible routes:
 
-- The M1's programmed controller is listed as a Toshiba TMP87PM40F, with regional variants. A [legacy programmer device list](https://j-fsg.com/support/dl/catalog/pdf/D_LIST130719.pdf) lists that part and a specialized adapter, suggesting a possible donor-chip readout route. Compatibility with the exact Bose silicon, the required profile, and any readout protection are unverified. No Bose firmware read has been performed.
+- The M1's programmed controller is listed as a Toshiba TMP87PM40F, with regional variants. A [older programmer device list](https://j-fsg.com/support/dl/catalog/pdf/D_LIST130719.pdf) lists that part and a specialized adapter, suggesting a possible donor-chip readout route. Compatibility with the exact Bose silicon, the required profile, and any readout protection are unverified. No Bose firmware read has been performed.
 - The related [Toshiba TMP87PH40A/PM40A datasheet](https://toshiba.semicon-storage.com/info/TMP87PH40ANG_datasheet_en_20080306.pdf?did=11438&prodName=TMP87PH40ANG) describes PROM operations, but it is not proof that the M1's exact installed part can be read successfully.
 - The P1's programmed controller needs a confirmed full chip marking and board revision before selecting a programmer. The service-manual abbreviation alone is insufficient.
 - The 24C02A EEPROMs hold settings or registration data; reading them would not be a dump of the controller firmware.
@@ -50,7 +50,7 @@ Donor boards could allow inspection of internal radio/controller signals and inv
 - Lifestyle systems and parts generally. Other models may also support the separate [compatibility research](help-wanted.md#other-lifestyle-systems-compatibility-research).
 - Access to suitable 2.4 GHz SDRs, spectrum analysis or capture equipment, antennas, and RF expertise. Please discuss suitability before purchasing or shipping anything.
 - Logic analyzers, oscilloscopes, and experience observing internal digital buses.
-- Compatible legacy chip programmers and adapters, after confirming the exact controller marking and a suitable read-only profile.
+- Compatible chip programmers and adapters, after confirming the exact controller marking and a suitable read-only profile.
 - Protocol documentation, reproducible captures, firmware-analysis expertise, or code implementing a verified state source.
 
 Please [open an issue](https://github.com/6K6666/bose-lifestyle-controller/issues/new) describing what you can offer, its condition, and any relevant experience. Coordinate acceptance and shipping privately before sending equipment; do not post an address or other personal details in a public issue. This request does not ask anyone to perform destructive experiments on their working system.
@@ -59,7 +59,7 @@ Please [open an issue](https://github.com/6K6666/bose-lifestyle-controller/issue
 
 We need reproducible evidence that a source reports actual room state, including changes made with the P1, rather than only remembering commands sent by this project. Reports should identify the hardware and firmware, capture method, actions taken, replies observed, and any unknowns. Remove credentials, private identifiers, and personal information before sharing evidence, and share only material you have permission to distribute.
 
-An implementation must handle missing or stale feedback honestly. The current bridge and Home Assistant schemas deliberately leave unsupported room-state values unknown; both would need coordinated changes when a verified state source exists.
+An implementation must handle missing or stale feedback honestly. The bridge and Home Assistant deliberately leave unsupported room-state values unknown; their shared data format and validation would need coordinated changes when a verified state source exists.
 
 ## Recognition
 
