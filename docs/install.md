@@ -2,20 +2,20 @@
 
 For a fresh install, choose one of two options:
 
-- **With Home Assistant:** Home Assistant pairs with the bridge computer over SSH and shows the room controls.
-- **Command line only:** the bridge computer runs the bridge and you control it with `bose-lifestyle` in a terminal. Home Assistant is not used. You teach an infrared remote's buttons from the command line too (step B8).
+- **With Home Assistant:** Home Assistant pairs with the bridge computer over SSH & shows the room controls.
+- **Command line only:** the bridge computer runs the bridge & you control it with `bose-lifestyle` in a terminal. Home Assistant isn't used. You teach an infrared remote's buttons from the command line too (step B8).
 
-Both options use the same installer on the bridge computer. Re-running the installer is safe: it never overwrites an existing configuration, and it never adds a duplicate key line.
+Both options use the same installer on the bridge computer. Re-running the installer is safe: it never overwrites an existing configuration, & it never adds a duplicate key line.
 
 Replace values written in capitals, such as `PLACEHOLDER`, with your own. Commands in code blocks run in a terminal on the bridge computer unless the step says otherwise.
 
 ## Before you start
 
-- The bridge computer is Linux with systemd and udev, has Python 3.9 or newer, and runs an SSH server. See [Hardware](hardware.md).
-- The serial adapter is connected to the bridge computer, and you know its path under `/dev/serial/by-id/`. List the choices with `ls -l /dev/serial/by-id/`.
-- A user account exists for the bridge. The default name is `bose`. The installer does not create the account, so create it first with your system's tools. The installer stops with a message if the account is missing.
-- The project files are on the bridge computer. Download them from the [GitHub releases page](https://github.com/6K6666/bose-lifestyle-controller/releases) and unpack them in a folder of your choice.
-- The bridge needs two Python packages: `pyserial` (imported as `serial`) and, if you use a receiver, `evdev`. Install them with your distribution's packages or with pip. The installer does not install them, but it checks for them before it writes anything and stops with a message if one is missing. Without them the bridge exits at startup and systemd keeps restarting it.
+- The bridge computer is Linux with systemd & udev, has Python 3.9 or newer, & runs an SSH server. See [Hardware](hardware.md).
+- The serial adapter is connected to the bridge computer, & you know its path under `/dev/serial/by-id/`. List the choices with `ls -l /dev/serial/by-id/`.
+- A user account exists for the bridge. The default name is `bose`. The installer doesn't create the account, so create it first with your system's tools. The installer stops with a message if the account is missing.
+- The project files are on the bridge computer. Download them from the [GitHub releases page](https://github.com/6K6666/bose-lifestyle-controller/releases) & unpack them in a folder of your choice.
+- The bridge needs two Python packages: `pyserial` (imported as `serial`) and, if you use a receiver, `evdev`. Install them with your distribution's packages or with pip. The installer doesn't install them, but it checks for them before it writes anything & stops with a message if one is missing. Without them the bridge exits at startup & systemd keeps restarting it.
 
 ## Route A: With Home Assistant
 
@@ -60,7 +60,7 @@ sudo -u bose -g RECEIVER-GROUP /opt/bose-lifestyle/bin/bose-lifestyle ir select 
 sudo sh install-bridge.sh --public-key 'PASTE-THE-PUBLIC-KEY-FROM-STEP-A2' --user bose --serial-device /dev/serial/by-id/usb-PLACEHOLDER-if00-port0 --receiver-device /dev/input/by-id/usb-PLACEHOLDER-event-kbd --receiver-vendor 0000 --receiver-product 0000
 ```
 
-Replace `0000` with the receiver's vendor and product IDs, and use the receiver path from `ir list`. Save the receiver before you start the bridge, because the service expects the saved receiver file at startup. Then step A9 teaches the remote's buttons (or step B8 on the command line route).
+Replace `0000` with the receiver's vendor & product IDs, & use the receiver path from `ir list`. Save the receiver before you start the bridge, because the service expects the saved receiver file at startup. Then step A9 teaches the remote's buttons (or step B8 on the command line route).
 
 If not: if `ir select` says `Only a receiver with a /dev/input/by-id/ path` or `That device does not report key presses`, pick a receiver from `ir list`. See [Receivers](receivers.md).
 
@@ -84,9 +84,9 @@ Where: Home Assistant, on the Bose Lifestyle Assistant pairing screens from step
 
 Expected: enter the bridge computer's address, the SSH user (`bose` by default) and the SSH port (22 is usual). Home Assistant then shows a fingerprint. Compare it with the fingerprint line from step A3. The integration is created when the two match.
 
-Type only the `SHA256:` value from the installer's fingerprint line into the field. The installer prints the full `ssh-keygen` line, with a bit count before the value and a key type after it. Only the part that starts with `SHA256:` matches what Home Assistant computes. The check is exact. An extra character stops pairing with a fingerprint mismatch.
+Type only the `SHA256:` value from the installer's fingerprint line into the field. The installer prints the full `ssh-keygen` line, with a bit count before the value & a key type after it. Only the part that starts with `SHA256:` matches what Home Assistant computes. The check is exact. An extra character stops pairing with a fingerprint mismatch.
 
-If the installer printed `Bridge host key fingerprint: on the bridge host run ssh-keygen -lf` instead of a fingerprint line, the bridge computer has no ed25519 host key file. Run `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` on the bridge computer and use the `SHA256:` value from its output.
+If the installer printed `Bridge host key fingerprint: on the bridge host run ssh-keygen -lf` instead of a fingerprint line, the bridge computer has no ed25519 host key file. Run `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` on the bridge computer & use the `SHA256:` value from its output.
 
 If not: a mismatch means nothing was saved. Run the fingerprint check again from step A3 and try once more. A connection error means the bridge computer is not reachable or the bridge is not running. See [Fix a problem](fix-a-problem.md).
 
@@ -100,7 +100,7 @@ Expected: the card is listed as "Bose Lifestyle Assistant" in the card picker. A
 type: custom:bose-control-card
 ```
 
-The card takes no YAML options. It ignores any other setting in the card configuration, so do not add a title or an entity list. Room names, inputs, and the room the infrared remote controls are set from the card's own settings screens. The remote's buttons are taught in Home Assistant with Add remote (step A9), or on the command line with `ir learn`.
+The card takes no YAML options. It ignores any other setting in the card configuration, so do not add a title or an entity list. Room names, inputs, & the room the infrared remote controls are set from the card's own settings screens. The remote's buttons are taught in Home Assistant with Add remote (step A9), or on the command line with `ir learn`.
 
 If the card is already on the dashboard, continue.
 
@@ -171,7 +171,7 @@ sudo sh install-bridge.sh --public-key "$(cat ~/bose-cli-key.pub)" --user bose -
 
 If not: read the line that starts with `install-bridge:`, fix the problem and run the command again.
 
-The installer refuses a home folder that does not exist, and a home folder that is not the account's own, unless you add `--create-home` (creates a missing home folder) or `--allow-custom-home` (confirms a different one). Both are rarely needed.
+The installer refuses a home folder that doesn't exist, & a home folder that isn't the account's own, unless you add `--create-home` (creates a missing home folder) or `--allow-custom-home` (confirms a different one). Both are rarely needed.
 
 ### Step B4: Check the saved configuration
 
@@ -208,7 +208,7 @@ sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle zone a on
 sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle source aux on
 ```
 
-Room D is not turned on by these steps. Room D is unverified and needs an explicit confirmation. See [Reference](reference.md) before you enable it.
+Room D isn't turned on by these steps. Room D is unverified & needs an explicit confirmation. See [Reference](reference.md) before you enable it.
 
 If not: `Nothing was changed` means the settings could not be saved. Check the message and run the command again. Exit code 2 means the command was refused before anything was sent.
 
@@ -228,7 +228,7 @@ sudo sh install-bridge.sh --public-key "$(cat ~/bose-cli-key.pub)" --user bose -
 
 Run the installer last, to add the receiver to the service. Replace `0000` with the receiver's IDs.
 
-**The remote's buttons are not taught yet.** Saving the receiver only chooses the device. Teach the buttons in step B8, after the bridge starts in step B7. The receiver and target room stay saved, so a later move to Home Assistant needs only its Add remote step.
+**The remote's buttons are not taught yet.** Saving the receiver only chooses the device. Teach the buttons in step B8, after the bridge starts in step B7. The receiver & target room stay saved, so a later move to Home Assistant needs only its Add remote step.
 
 If not: if `ir select` says `That device does not report key presses`, pick a receiver from `ir list`. See [Receivers](receivers.md).
 
@@ -269,7 +269,7 @@ sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle ir button REMOTE-ID volume-u
 sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle ir remote REMOTE-ID on
 ```
 
-Replace `REMOTE-ID` with the ID that `ir list` shows. Press the button on the remote and check the room before you turn on the next one.
+Replace `REMOTE-ID` with the ID that `ir list` shows. Press the button on the remote & check the room before you turn on the next one.
 
 If not: "That is not a remote ID" means the ID was mistyped: copy it from `ir list`. "That button has no saved code" means the button was skipped: learn the remote again in step B8. "The bridge is not running, so nothing was changed" means start the bridge in step B7 first.
 
@@ -288,14 +288,14 @@ If not: read [Fix a problem](fix-a-problem.md), which has the installer section 
 
 ## Home Assistant without ssh
 
-The Home Assistant integration pairs with the bridge computer by running two programs inside the Home Assistant environment: `ssh` and `ssh-keyscan`. If either program is missing, pairing stops at its first step with a message that names the missing program and points to this section.
+The Home Assistant integration pairs with the bridge computer by running two programs inside the Home Assistant environment: `ssh` & `ssh-keyscan`. If either program is missing, pairing stops at its first step with a message that names the missing program & points to this section.
 
-The integration checks for both programs when pairing starts. It cannot pair without them, and it does not pair through any other program.
+The integration checks for both programs when pairing starts. It can't pair without them, & it doesn't pair through any other program.
 
 To install the missing programs:
 
 1. Check which Home Assistant installation type you use. Some installation types do not let you install an extra program. Check that type's documentation for installing the OpenSSH client.
 2. If your installation lets you install an OpenSSH client, install it in the same environment where Home Assistant runs. On many Linux systems, the OpenSSH client package provides both programs.
-3. If your installation does not let you add programs, use the route B command line steps above. The bridge works without Home Assistant, and you configure it with `bose-lifestyle`. That command does not send power, source or volume commands, so daily control without Home Assistant needs the infrared remote route (volume and mute only) or your original Bose remote. You can add Home Assistant later.
+3. If your installation doesn't let you add programs, use the route B command line steps above. The bridge works without Home Assistant, & you configure it with `bose-lifestyle`. That command doesn't send power, source or volume commands, so daily control without Home Assistant needs the infrared remote route (volume & mute only) or your original Bose remote. You can add Home Assistant later.
 
-After you install the client, restart Home Assistant and start pairing again from step A2. Restart Home Assistant itself, never the Bose unit.
+After you install the client, restart Home Assistant & start pairing again from step A2. Restart Home Assistant itself, never the Bose unit.

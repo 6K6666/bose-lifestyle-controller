@@ -1,7 +1,7 @@
 # Bose Lifestyle Assistant changelog
 
 All notable changes to this project are documented in this file. The format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), & the project uses
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
@@ -12,12 +12,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Changed
 
-- Volume presses in Rooms A, B and C share the same quarter-second pacing.
+- Volume presses in Rooms A, B & C share the same quarter-second pacing.
 
 ## [1.0.0] - 2026-10-16
 
 ### Added
 
-- Serial bridge for Bose Lifestyle systems, with a command line and a Home Assistant integration.
-- Room and source control, volume, mute, and infrared remote learning.
-- Installer, uninstall and backup documentation, and the release packaging for HACS.
+- Serial bridge for Bose Lifestyle systems, with a command line & a Home Assistant integration.
+- Room & source control, volume, mute, & infrared remote learning.
+- Installer, uninstall & backup documentation, & the release packaging for HACS.

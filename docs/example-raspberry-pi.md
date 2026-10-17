@@ -1,11 +1,11 @@
 # Example: a Raspberry Pi bridge computer
 
-This worked example follows the install route from start to finish on a Raspberry Pi. A Raspberry Pi is not required: any Linux computer that meets [Hardware](hardware.md) works. See [Install](install.md) for the general steps.
+This worked example follows the install route from start to finish on a Raspberry Pi. A Raspberry Pi isn't required: any Linux computer that meets [Hardware](hardware.md) works. See [Install](install.md) for the general steps.
 
 The example uses:
 
-- A Raspberry Pi with a network connection, a USB serial adapter for the Bose control unit, and optionally a USB infrared receiver.
-- A 64-bit Raspberry Pi OS image, which includes systemd and udev.
+- A Raspberry Pi with a network connection, a USB serial adapter for the Bose control unit, & optionally a USB infrared receiver.
+- A 64-bit Raspberry Pi OS image, which includes systemd & udev.
 - The default bridge user name, `bose`.
 - The host name `bridge.example.invalid`. Use your own address.
 
@@ -15,7 +15,7 @@ Values in capitals, such as `PLACEHOLDER`, are yours to replace.
 
 Where: your own computer, with the Raspberry Pi Imager.
 
-In the Imager's settings, set a host name, enable SSH, and create the user `bose` with a password or an SSH key. Write the image to the microSD card and let the Imager verify it.
+In the Imager's settings, set a host name, enable SSH, & create the user `bose` with a password or an SSH key. Write the image to the microSD card & let the Imager verify it.
 
 Expected: the Imager reports that writing and verification succeeded.
 
@@ -65,7 +65,7 @@ If not: check the package names with your system's package tools. The installer 
 
 Where: the Pi, in the `bose` user's home folder.
 
-Download the project files from the [GitHub releases page](https://github.com/6K6666/bose-lifestyle-controller/releases) and unpack them so that the folder `bose-lifestyle` is in your home folder.
+Download the project files from the [GitHub releases page](https://github.com/6K6666/bose-lifestyle-controller/releases) & unpack them so that the folder `bose-lifestyle` is in your home folder.
 
 Expected: the folder contains `deploy/install-bridge.sh`.
 
@@ -110,7 +110,7 @@ If not: read the line that starts with `install-bridge:`, fix the problem, and r
 
 Where: the Pi.
 
-Run the installer again with the receiver options, then save the receiver before the service starts. See [Receivers](receivers.md) for `ir list`, `ir verify` and `ir select`.
+Run the installer again with the receiver options, then save the receiver before the service starts. See [Receivers](receivers.md) for `ir list`, `ir verify` & `ir select`.
 
 ```
 sudo sh install-bridge.sh --public-key 'PASTE-THE-PUBLIC-KEY' --user bose --serial-device /dev/serial/by-id/usb-PLACEHOLDER-if00-port0 --receiver-device /dev/input/by-id/usb-PLACEHOLDER-event-kbd --receiver-vendor 0000 --receiver-product 0000
