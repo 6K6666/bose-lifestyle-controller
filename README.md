@@ -4,13 +4,13 @@
 
 ![Bose Lifestyle Assistant](docs/assets/banner.png)
 
-This project currently targets the Bose Lifestyle 50/M1 through the control unit's ETAP serial interface. A small bridge program runs on a Linux computer, the bridge computer. You control the system from Home Assistant. The command line on the bridge computer configures and checks the bridge; it does not send daily power, source or volume commands. Those come from Home Assistant; a learned infrared remote provides volume and mute only, and the original Bose remote covers everything else.
+This project currently targets the Bose Lifestyle 50/M1 through the control unit's ETAP serial interface. A small bridge program runs on a Linux computer, called the bridge computer. Home Assistant provides the system controls. The command line on the bridge computer configures and checks the bridge; it does not send daily power, source or volume commands. Those come from Home Assistant; a learned infrared remote provides volume and mute only, and the original Bose remote covers everything else.
 
-This project covers Lifestyle systems over the serial port only; newer Bose speakers use a different protocol and are not supported.
+Only serial-connected Lifestyle systems are covered. Newer Bose speakers use a different protocol and are not supported.
 
 ## Help Wanted
 
-Have an active, working Zone D? We need your help testing it and improving support. We also welcome research into other Lifestyle systems with documented serial control. See [Help Wanted](docs/help-wanted.md) for testing requests, compatibility leads, and how to contribute.
+We need owners with an active, working Zone D to help test and improve support. We also welcome research into other Lifestyle systems with documented serial control. See [Help Wanted](docs/help-wanted.md) for testing requests, compatibility leads, and how to contribute.
 
 We also seek donor M1/P1/Lifestyle equipment, RF test equipment, and research help for [live state support](docs/live-state-research.md); donors and successful contributors will be prominently credited.
 

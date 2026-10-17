@@ -1,6 +1,6 @@
 # Infrared receivers
 
-An infrared (IR) receiver lets a remote control send its buttons to the bridge. A receiver is optional. The bridge does not depend on one model: it works with any Linux input device that reports key presses and that has a stable path under `/dev/input/by-id/`.
+An optional infrared (IR) receiver sends remote-control button presses to the bridge. Any Linux input device that reports key presses and has a stable path under `/dev/input/by-id/` can serve as the receiver; no particular model is required.
 
 Receiver identity is stored only in the bridge's `ir-config.json`. No receiver brand is built into the software.
 
@@ -8,7 +8,7 @@ Known-working example: HP Media Center IR Receiver, model OVU400103/00 (infrared
 
 ## The by-id contract
 
-A receiver can be used only when all of these are true:
+A receiver must meet all of these requirements:
 
 - The device reports key presses to Linux.
 - It has a path under `/dev/input/by-id/`. This path does not change when you plug the device into another port.
@@ -40,7 +40,7 @@ Expected: `Key codes seen:` and a list of numbers, and `Scan codes seen:` when t
 
 Where: the bridge computer, before you start the bridge the first time.
 
-`ir select` chooses the receiver. It saves the receiver's path and name and three key codes to `ir-config.json`, in the bridge's state folder. It does not teach the remote's buttons. The file is written to a temporary file, checked, and then moved into place. It is never changed if the check fails.
+`ir select` chooses the receiver. It saves the receiver's path and name and three key codes to `ir-config.json`, in the bridge's state folder. It does not teach the remote's buttons. It writes a temporary file, checks it, then moves it into place. A failed check leaves the existing file unchanged.
 
 ```
 sudo -u bose -g RECEIVER-GROUP /opt/bose-lifestyle/bin/bose-lifestyle ir select /dev/input/by-id/usb-PLACEHOLDER-event-kbd --volume-up 115 --volume-down 114 --mute 113
@@ -62,9 +62,9 @@ Where: the bridge computer, while the bridge is running. Run it as the bridge us
 sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle ir learn --name "Den remote"
 ```
 
-The command first says that other remotes you have set up stop working while you learn this one. It then asks for each of the three buttons. For each button, point the remote at the receiver, press Enter to listen, then press and release the button three times about one second apart. Held-button repeats do not count. Learning sends no Bose commands, and it never transmits anything to the Bose unit.
+The command first says that other remotes you have set up stop working while you learn this one. It then asks for each of the three buttons. For each button, point the remote at the receiver, press Enter to listen, then press and release the button three times about one second apart. Held-button repeats do not count. Learning transmits nothing to the Bose unit, including commands.
 
-Each button must verify, with three matching presses, before it is kept. If the presses do not match, the command says so and offers Retry or Skip. A code that another remote also uses is marked as shared: identical infrared signals cannot tell two physical remotes apart. At the review, type `y` to save. Nothing is saved until you do. Press Ctrl-C before the review to cancel; the session is canceled and nothing is saved. After the save, Ctrl-C only stops the ready check, and the remote stays saved with its buttons off. Add `--yes` only for a non-interactive run: it skips the prompts, keeps each button that verifies, and stops on the first button that does not.
+Each button must verify, with three matching presses, before it is kept. If the presses do not match, the command says so and offers Retry or Skip. A code that another remote also uses is marked as shared: identical infrared signals cannot tell two physical remotes apart. At the review, type `y` to save. Nothing is saved before that. Press Ctrl-C before the review to cancel; the session is canceled and nothing is saved. After the save, Ctrl-C only stops the ready check, and the remote stays saved with its buttons off. Add `--yes` only for a non-interactive run: it skips the prompts, keeps each button that verifies, and stops on the first button that does not.
 
 After the save, a ready check asks you to press each learned button once. The saved buttons start disabled. Turn them on one at a time:
 

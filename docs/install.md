@@ -1,13 +1,13 @@
 # Install
 
-This page has one fresh-install route with two options. Read the two options, then choose one:
+For a fresh install, choose one of two options:
 
 - **With Home Assistant:** Home Assistant pairs with the bridge computer over SSH and shows the room controls.
 - **Command line only:** the bridge computer runs the bridge and you control it with `bose-lifestyle` in a terminal. Home Assistant is not used. You teach an infrared remote's buttons from the command line too (step B8).
 
 Both options use the same installer on the bridge computer. Re-running the installer is safe: it never overwrites an existing configuration, and it never adds a duplicate key line.
 
-Values written in capitals, such as `PLACEHOLDER`, are yours to replace. Commands in code blocks run in a terminal on the bridge computer unless the step says otherwise.
+Replace values written in capitals, such as `PLACEHOLDER`, with your own. Commands in code blocks run in a terminal on the bridge computer unless the step says otherwise.
 
 ## Before you start
 
@@ -46,7 +46,7 @@ cd PATH/TO/bose-lifestyle/deploy
 sudo sh install-bridge.sh --public-key 'PASTE-THE-PUBLIC-KEY-FROM-STEP-A2' --user bose --serial-device /dev/serial/by-id/usb-PLACEHOLDER-if00-port0
 ```
 
-If not: the installer prints one line that starts with `install-bridge:` and names the problem. Fix that problem and run the same command again. Nothing it has already written is damaged by a second run.
+If not: the installer prints one line that starts with `install-bridge:` and names the problem. Fix that problem and run the same command again. A second run does not damage anything already written.
 
 ### Step A4: Set up the receiver (only if you have one)
 
@@ -84,7 +84,7 @@ Where: Home Assistant, on the Bose Lifestyle Assistant pairing screens from step
 
 Expected: enter the bridge computer's address, the SSH user (`bose` by default) and the SSH port (22 is usual). Home Assistant then shows a fingerprint. Compare it with the fingerprint line from step A3. The integration is created when the two match.
 
-Type only the `SHA256:` value from the installer's fingerprint line into the field. The installer prints the full `ssh-keygen` line, with a bit count before the value and a key type after it. Only the part that starts with `SHA256:` matches what Home Assistant computes. The check is exact, so an extra character stops pairing with a fingerprint mismatch.
+Type only the `SHA256:` value from the installer's fingerprint line into the field. The installer prints the full `ssh-keygen` line, with a bit count before the value and a key type after it. Only the part that starts with `SHA256:` matches what Home Assistant computes. The check is exact. An extra character stops pairing with a fingerprint mismatch.
 
 If the installer printed `Bridge host key fingerprint: on the bridge host run ssh-keygen -lf` instead of a fingerprint line, the bridge computer has no ed25519 host key file. Run `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` on the bridge computer and use the `SHA256:` value from its output.
 
@@ -292,7 +292,7 @@ The Home Assistant integration pairs with the bridge computer by running two pro
 
 The integration checks for both programs when pairing starts. It cannot pair without them, and it does not pair through any other program.
 
-What to do, in plain terms:
+To install the missing programs:
 
 1. Check which Home Assistant installation type you use. Some installation types do not let you install an extra program. Check that type's documentation for installing the OpenSSH client.
 2. If your installation lets you install an OpenSSH client, install it in the same environment where Home Assistant runs. On many Linux systems, the OpenSSH client package provides both programs.

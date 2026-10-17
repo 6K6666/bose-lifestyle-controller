@@ -4,7 +4,7 @@ This project connects a Bose Lifestyle system to Home Assistant, or to a command
 
 Unofficial community project. Not affiliated with or endorsed by Bose Corporation. "Bose" and "Lifestyle" are trademarks of Bose Corporation, used here only to identify compatible products.
 
-Two rules apply everywhere in these pages:
+Follow these rules throughout setup and use:
 
 - Never power-cycle the M1 control unit. It may fail to re-link the remote.
 - Do not connect a serial adapter to the M1 until you have checked its signal levels (see [Hardware](hardware.md)).

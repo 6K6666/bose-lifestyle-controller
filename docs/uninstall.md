@@ -1,6 +1,6 @@
 # Uninstall
 
-This page removes everything the installer and the Home Assistant integration create. Follow it in order: Home Assistant first, then the bridge computer. Back up first if you may want the system back later (see [Update, back up and recover](update-backup-recover.md)).
+Remove everything created by the installer and the Home Assistant integration in this order: Home Assistant first, then the bridge computer. Back up first if you may want the system back later (see [Update, back up and recover](update-backup-recover.md)).
 
 Removing the bridge stops room control. Tell the household first, and make sure they have the original Bose remote.
 
@@ -75,7 +75,7 @@ The installer does not create the `bose` user, does not add anyone to a group, a
 
 ## What the installer created
 
-For reference, these are all the paths and entries the installer creates, and where each is removed above:
+These are all the paths and entries the installer creates, with their removal steps:
 
 | Created by the installer | Removed in step |
 |---|---|

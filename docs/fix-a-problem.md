@@ -4,7 +4,7 @@ Find the symptom, then read the section for your role. The household section use
 
 ## Household
 
-These steps need no settings and no command line.
+These steps require no settings changes or command line.
 
 | What you see | What to do |
 |---|---|
@@ -134,7 +134,7 @@ These messages appear in the Bose Lifestyle Assistant setup in Home Assistant. N
 
 ### Installer messages
 
-The installer prints each problem on one line that starts with `install-bridge:`. The most common ones are these.
+The installer prints each problem on one line starting with `install-bridge:`. Common messages are listed below.
 
 | Message | Fix |
 |---|---|
@@ -154,7 +154,7 @@ Running the installer again is always safe.
 
 ### Checking events
 
-`events` shows the last recent entries, with the time, the kind, the action and the detail. Kinds include `start`, `serial`, `ir`, `manage`, `outcome`, `tx`, `rx`, `refused` and `fault`.
+`events` shows recent entries, with the time, the kind, the action and the detail. Kinds include `start`, `serial`, `ir`, `manage`, `outcome`, `tx`, `rx`, `refused` and `fault`.
 
 ```
 sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle events --count 50
