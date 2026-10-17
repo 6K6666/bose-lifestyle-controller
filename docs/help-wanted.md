@@ -13,6 +13,14 @@ Confirm that Zone D works with your original Bose controls, then report what phy
 
 If you use a learned infrared remote, feedback on its Zone D volume and mute controls is welcome too. Note any difference between what Home Assistant reports and what the system actually does.
 
+## Live state research and equipment donations
+
+**Live state is currently unsupported.** We cannot read the current power, source, volume, or mute state for each room, including changes made with the P1 remote. Command acknowledgments and volume estimates do not establish the actual state.
+
+We are seeking **donor M1 interfaces, P1 remotes, Lifestyle systems and parts, and RF test equipment or lab access** to investigate this. Several RF research approaches we evaluated required equipment prohibitively expensive for the project's current budget. Affordable approaches, equipment loans, and reproducible research are welcome.
+
+See [Live state research](live-state-research.md) for what we have investigated, the remaining questions, useful equipment, and how to help. Donors and contributors who provide successful code or research for this capability will receive prominent credit in the repository, with their permission.
+
 ## Other Lifestyle systems: compatibility research
 
 Serial control is documented on additional Lifestyle systems. This project's tested target is the Lifestyle 50/M1; compatibility with the following systems remains unverified.

@@ -12,6 +12,8 @@ This project covers Lifestyle systems over the serial port only; newer Bose spea
 
 Have an active, working Zone D? We need your help testing it and improving support. We also welcome research into other Lifestyle systems with documented serial control. See [Help Wanted](docs/help-wanted.md) for testing requests, compatibility leads, and how to contribute.
 
+We also seek donor M1/P1/Lifestyle equipment, RF test equipment, and research help for [live state support](docs/live-state-research.md); donors and successful contributors will be prominently credited.
+
 ## Documentation
 
 - [Start here](docs/start-here.md): what this is, and which page to read next.

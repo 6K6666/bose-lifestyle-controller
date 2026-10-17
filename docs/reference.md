@@ -87,7 +87,7 @@ Home Assistant side:
 
 ## Status
 
-The `status` command shows whether the bridge runs and the last command transmitted. It does not report current room power, source, volume or mute; the Bose controller does not provide live state feedback. `Last command sent` is a command record, not a claim that the room is currently in that state.
+The `status` command shows whether the bridge runs and the last command transmitted. It does not report current room power, source, volume or mute; the project has no verified query for live room state. `Last command sent` is a command record, not a claim that the room is currently in that state.
 
 - `Bridge: running (live mode); serial port open; fault: none`, or `Bridge: not running (saved configuration)`.
 - `Last command sent: room-b-volume-up (transmitted-with-matching-response)` shows the last recorded transmission and its response outcome, or `none recorded` / `unavailable (bridge stopped)` when there is no live transmission record.
