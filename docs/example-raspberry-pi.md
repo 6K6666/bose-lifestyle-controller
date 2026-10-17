@@ -1,6 +1,6 @@
 # Example: a Raspberry Pi bridge computer
 
-This page is one worked example of the generic install route on a Raspberry Pi. It is not a requirement. Any Linux computer that meets [Hardware](hardware.md) works. This page shows one set of choices from start to finish, and the general steps are in [Install](install.md).
+This worked example follows the install route from start to finish on a Raspberry Pi. A Raspberry Pi is not required: any Linux computer that meets [Hardware](hardware.md) works. See [Install](install.md) for the general steps.
 
 The example uses:
 

@@ -1,6 +1,6 @@
 # Hardware
 
-This page lists what you need, and the safety cautions that apply to it.
+Check the hardware requirements and safety cautions before connecting the bridge.
 
 ## What you need
 
@@ -16,7 +16,7 @@ A Raspberry Pi is one example of a bridge computer. The software does not requir
 
 ### Wiring used on a working setup
 
-This is the wiring on the maintainer's working setup: a USB-to-TTL FTDI cable (FT232RNL chip, 6-pin header) feeding a 3.5 mm plug through a three-position screw terminal. Three of the six wires are used. The adapter's wire colors are those of the standard FTDI TTL-232R cable; check your own adapter's documentation, because yours may differ.
+The maintainer's working setup uses a USB-to-TTL FTDI cable (FT232RNL chip, 6-pin header) feeding a 3.5 mm plug through a three-position screw terminal. Three of the six wires are used. The adapter's wire colors are those of the standard FTDI TTL-232R cable; check your own adapter's documentation, because yours may differ.
 
 | Adapter wire | Signal | 3.5 mm plug (screw terminal label) |
 |---|---|---|
@@ -38,7 +38,7 @@ The plug goes into the Bose control unit's 3.5 mm serial jack. The adapter's tra
 
 **The software can drive amplifiers to high volume.** The bridge can turn rooms on and raise volume. Before you test, set the amplifiers to a low level, and keep them low while you check each command.
 
-**Defaults are conservative.** New installs start with every room off, every input disconnected and unverified commands off. The bridge sends nothing when it starts. It never retries or replays a command. Turn on only what you need.
+**New-install defaults.** New installs start with every room off, every input disconnected and unverified commands off. The bridge sends nothing when it starts. It never retries or replays a command. Turn on only what you need.
 
 ## Known-working example
 

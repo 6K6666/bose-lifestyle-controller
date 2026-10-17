@@ -83,7 +83,7 @@ Where: the bridge computer.
    sudo systemctl stop bose-bridge.service
    ```
 
-2. Keep the damaged file, so nothing is lost, then move it aside:
+2. Preserve the damaged file by moving it aside:
 
    ```
    sudo mv /var/lib/bose-control/config.json /var/lib/bose-control/config.json.damaged

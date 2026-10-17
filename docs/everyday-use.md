@@ -1,10 +1,10 @@
 # Everyday use
 
-This page is for people who use the system day to day. You do not need to change any settings to use it. If a room or input is missing, ask the person who installed the system.
+Daily use requires no settings changes. If a room or input is missing, ask the person who installed the system.
 
 ## Pick a room
 
-Each room has its own card in Home Assistant. The room's name is at the top of the card. A room that the installer has not turned on is not shown on the daily card. The installer turns rooms on and off in the card's settings.
+Each room has its own Home Assistant card, with its name at the top. A room that the installer has not turned on is not shown on the daily card. The installer turns rooms on and off in the card's settings.
 
 ## Turn a room on or off
 
@@ -12,7 +12,13 @@ Press **On** or **Off** on the room's card.
 
 ## Change the volume
 
-Press **Volume up** or **Volume down**. At the default setting a tap sends one step, and holding the button asks for a step about three times a second until you let go. The bridge accepts a step at most every quarter second in the same room (Rooms A, B and C alike), so a hold changes the volume that fast. If the installer set more than one volume step per press, each press sends that many steps one after another, and the card ignores a repeat while the previous press is still being sent. A press ends with all of its steps, or stops at the first problem; if a press takes too long or the bridge is shutting down, the remaining steps are not sent and the card says it could not confirm. Presses are not queued: anything pressed while another press is being sent, or faster than the system accepts, is dropped, so tap or hold again. Mute is one press per tap. Power and input buttons wait about two and a half seconds after each other, and are dimmed while they wait.
+Press **Volume up** or **Volume down**. At the default setting a tap sends one step, and holding the button asks for a step about three times a second until you let go. The bridge accepts a step at most every quarter second in the same room (Rooms A, B and C alike), so a hold changes the volume that fast.
+
+If the installer set more than one volume step per press, each press sends that many steps one after another, and the card ignores a repeat while the previous press is still being sent. A press ends with all of its steps, or stops at the first problem; if a press takes too long or the bridge is shutting down, the remaining steps are not sent and the card says it could not confirm.
+
+Presses are not queued: anything pressed while another press is being sent, or faster than the system accepts, is dropped, so tap or hold again. Mute is one press per tap.
+
+Power and input buttons wait about two and a half seconds after each other, and are dimmed while they wait.
 
 ## Mute and unmute
 
@@ -38,7 +44,7 @@ After the bridge restarts, it forgets the mute state it last sent. The remote's 
 
 ## What the messages mean
 
-Messages appear on the card, next to the control or at the top. They say what happened to the press.
+Messages next to the control or at the top of the card explain what happened to the press.
 
 | Message | What it means | What to do |
 |---|---|---|

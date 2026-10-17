@@ -1,6 +1,6 @@
 # Reference
 
-This page is for installers and maintainers. Household members do not need it. It lists the command line, the configuration, the files and paths, the status fields, the messages and the security model.
+Installers and maintainers can look up commands, configuration, files and paths, status fields, messages and the security model here. Household members do not need this page.
 
 ## Conventions
 
@@ -57,7 +57,7 @@ The bridge reads one configuration file, `config.json`, in the state folder. It 
 
 The file also has one marker field that the bridge checks. Leave it as the installer wrote it.
 
-`config show` prints the parts above that are in the file. The bridge refuses a file that is larger than 4096 bytes, contains duplicate keys, has a byte-order mark, or has a value of the wrong type. A refused file puts the bridge in a state where it sends nothing. The bridge's status reports `config-invalid`, and the command line says there is no valid saved configuration. Do not edit the file by hand. Use the commands above. See [Update, back up and recover](update-backup-recover.md) if the file is damaged.
+`config show` prints the parts above that are in the file. The bridge refuses a file that is larger than 4096 bytes, contains duplicate keys, has a byte-order mark, or has a value of the wrong type. The bridge sends nothing when it refuses a file. The bridge's status reports `config-invalid`, and the command line says there is no valid saved configuration. Do not edit the file by hand. Use the commands above. See [Update, back up and recover](update-backup-recover.md) if the file is damaged.
 
 ## Files and paths
 

@@ -2,11 +2,11 @@
 
 **Live state is currently unsupported.** The project sends commands but cannot read each room's current power, source, volume, or mute state. This includes changes made with the original P1 remote. A successful serial acknowledgment means the command was acknowledged; it does not prove the resulting room state. Counting volume commands cannot reliably establish absolute volume.
 
-We want to close that gap. We are seeking donor **M1 interfaces, P1 remotes, Lifestyle equipment and parts**, along with **RF test equipment, equipment loans, or lab access**. Several RF approaches evaluated so far required equipment prohibitively expensive for the project's current budget. Lower-cost methods and existing captures or research could help substantially. We cannot promise that donated equipment will lead to a working implementation.
+To investigate live state, we need donor **M1 interfaces, P1 remotes, Lifestyle equipment and parts**, along with **RF test equipment, equipment loans, or lab access**. Several RF approaches evaluated so far required equipment beyond the project's current budget. Lower-cost methods and existing captures or research could help. We cannot promise that donated equipment will lead to a working implementation.
 
 ## What we have researched so far
 
-The following summarizes research through October 16, 2026. These are leads and unresolved questions, not working live-state implementations.
+This page summarizes research through October 16, 2026. These are leads and unresolved questions, not working live-state implementations.
 
 ### 1. Serial feedback through the M1
 
@@ -29,7 +29,7 @@ The P1 and M1 communicate over a two-way 2.4 GHz radio link. The [P1 FCC filing]
 
 We considered borrowing or renting a software-defined radio for an initial **receive-only** survey: identify bursts, correlate them with known P1 actions, then investigate message structure, pairing, timing, and responses. A [HackRF One](https://greatscottgadgets.com/hackrf/one/) was considered as a survey tool because its tuning range covers 2.4 GHz. Its maximum 20 million samples per second cannot observe that entire roughly 77 MHz span at once. Actual channel use and any hopping behavior remain unverified, so this is not a guarantee that one particular radio is sufficient.
 
-Reliable state recovery could require wider-band capture, more capable RF analysis equipment, or specialist lab access. Cost blocked several approaches within the current project budget. We have acquired no RF research equipment and performed no RF captures, transmission, replay, or P1 impersonation experiments. Advice that reduces the equipment requirement would be valuable.
+Reliable state recovery could require wider-band capture, more capable RF analysis equipment, or specialist lab access. Cost blocked several approaches within the current project budget. We have acquired no RF research equipment and performed no RF captures, transmission, replay, or P1 impersonation experiments. We welcome advice that reduces the equipment requirement.
 
 The public [M1](https://fccid.io/A94-M1) and P1 FCC material provides manuals, photos, and test reports. Some technical exhibits are marked confidential or are not publicly downloadable, so the filings have not supplied a complete protocol description.
 
@@ -37,7 +37,7 @@ The public [M1](https://fccid.io/A94-M1) and P1 FCC material provides manuals, p
 
 The [Bose Lifestyle 40/50 service manual](https://audiocircuit.dk/downloads/bose/Bose-LifestyleLS40-mc-sm.pdf) provides board and component information. Earlier research identified these possible routes:
 
-- The M1's programmed controller is listed as a Toshiba TMP87PM40F, with regional variants. A [older programmer device list](https://j-fsg.com/support/dl/catalog/pdf/D_LIST130719.pdf) lists that part and a specialized adapter, suggesting a possible donor-chip readout route. Compatibility with the exact Bose silicon, the required profile, and any readout protection are unverified. No Bose firmware read has been performed.
+- The M1's programmed controller is listed as a Toshiba TMP87PM40F, with regional variants. An [older programmer device list](https://j-fsg.com/support/dl/catalog/pdf/D_LIST130719.pdf) lists that part and a specialized adapter, suggesting a possible donor-chip readout route. Compatibility with the exact Bose silicon, the required profile, and any readout protection are unverified. No Bose firmware read has been performed.
 - The related [Toshiba TMP87PH40A/PM40A datasheet](https://toshiba.semicon-storage.com/info/TMP87PH40ANG_datasheet_en_20080306.pdf?did=11438&prodName=TMP87PH40ANG) describes PROM operations, but it is not proof that the M1's exact installed part can be read successfully.
 - The P1's programmed controller needs a confirmed full chip marking and board revision before selecting a programmer. The service-manual abbreviation alone is insufficient.
 - The 24C02A EEPROMs hold settings or registration data; reading them would not be a dump of the controller firmware.
@@ -59,7 +59,7 @@ Please [open an issue](https://github.com/6K6666/bose-lifestyle-controller/issue
 
 We need reproducible evidence that a source reports actual room state, including changes made with the P1, rather than only remembering commands sent by this project. Reports should identify the hardware and firmware, capture method, actions taken, replies observed, and any unknowns. Remove credentials, private identifiers, and personal information before sharing evidence, and share only material you have permission to distribute.
 
-An implementation must handle missing or stale feedback honestly. The bridge and Home Assistant deliberately leave unsupported room-state values unknown; their shared data format and validation would need coordinated changes when a verified state source exists.
+An implementation must handle missing or stale feedback honestly. The bridge and Home Assistant leave unsupported room-state values unknown; their shared data format and validation would need coordinated changes when a verified state source exists.
 
 ## Recognition
 
