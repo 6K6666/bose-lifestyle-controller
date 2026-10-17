@@ -1,18 +1,18 @@
 # Reference
 
-Installers and maintainers can look up commands, configuration, files and paths, status fields, messages and the security model here. Household members do not need this page.
+Installers & maintainers can look up commands, configuration, files & paths, status fields, messages & the security model here. Household members do not need this page.
 
 ## Conventions
 
-- The command is `bose-lifestyle`. The installer does not put it on your search path. In examples it is run as the full path, `/opt/bose-lifestyle/bin/bose-lifestyle`, which is where the default installer puts it.
-- Run it as the bridge user, `bose` by default, so it can read and write the bridge's state folder and reach the command socket:
+- The command is `bose-lifestyle`. The installer doesn't put it on your search path. In examples it is run as the full path, `/opt/bose-lifestyle/bin/bose-lifestyle`, which is where the default installer puts it.
+- Run it as the bridge user, `bose` by default, so it can read & write the bridge's state folder & reach the command socket:
 
   ```
   sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle status
   ```
 
-  Run as root, a change can leave the saved configuration owned by root. The bridge then cannot read it. Use the bridge user.
-- Exit codes: `0` means success. `1` means something failed, was canceled (Ctrl-C or a declined save), or the bridge could not confirm a change, and nothing was retried. `2` means the command was refused before anything was sent (a usage error, a name that is not 1 to 40 characters, or a flag that is required for Room D).
+  Run as root, a change can leave the saved configuration owned by root. The bridge then can't read it. Use the bridge user.
+- Exit codes: `0` means success. `1` means something failed, was canceled (Ctrl-C or a declined save), or the bridge couldn't confirm a change, & nothing was retried. `2` means the command was refused before anything was sent (a usage error, a name that isn't 1 to 40 characters, or a flag that is required for Room D).
 
 ## Command line
 
@@ -43,21 +43,21 @@ Installers and maintainers can look up commands, configuration, files and paths,
 | `ir forget ID` | Removes a learned remote from the bridge. Needs the bridge running. |
 | `identify --yes` | Sends one manual identify command to a running bridge and prints its reply. This is the only command that sends anything to the Bose unit. Without `--yes`, it prints an explanation and sends nothing. |
 
-Changes made while the bridge is running apply at once. Changes made while it is stopped are saved and apply when it next starts. The command never restarts the service and never edits `config.json` by hand.
+Changes made while the bridge is running apply at once. Changes made while it is stopped are saved & apply when it next starts. The command never restarts the service & never edits `config.json` by hand.
 
 ## Configuration
 
 The bridge reads one configuration file, `config.json`, in the state folder. It has exactly these top-level parts:
 
-- `zones`: for each room `a`, `b`, `c` and `d`, a flag `enabled` (true or false).
+- `zones`: for each room `a`, `b`, `c` & `d`, a flag `enabled` (true or false).
 - `sources`: for each input, a true or false flag. True means the input is connected.
 - `unverified`: for each room, a true or false flag that allows unverified commands for that room.
 - `ir`: `zone`, the room the infrared remote controls (`a`, `b`, `c` or `d`).
-- `volume_steps`: optional, a whole number from 1 to 5, how many volume steps one volume up or volume down press sends. It is written only when it is not 1, so a file that never set it keeps the four parts above.
+- `volume_steps`: optional, a whole number from 1 to 5, how many volume steps one volume up or volume down press sends. It is written only when it isn't 1, so a file that never set it keeps the four parts above.
 
 The file also has one marker field that the bridge checks. Leave it as the installer wrote it.
 
-`config show` prints the parts above that are in the file. The bridge refuses a file that is larger than 4096 bytes, contains duplicate keys, has a byte-order mark, or has a value of the wrong type. The bridge sends nothing when it refuses a file. The bridge's status reports `config-invalid`, and the command line says there is no valid saved configuration. Do not edit the file by hand. Use the commands above. See [Update, back up and recover](update-backup-recover.md) if the file is damaged.
+`config show` prints the parts above that are in the file. The bridge refuses a file that is larger than 4096 bytes, contains duplicate keys, has a byte-order mark, or has a value of the wrong type. The bridge sends nothing when it refuses a file. The bridge's status reports `config-invalid`, & the command line says there is no valid saved configuration. Do not edit the file by hand. Use the commands above. See [Update, back up and recover](update-backup-recover.md) if the file is damaged.
 
 ## Files and paths
 
@@ -74,7 +74,7 @@ The file also has one marker field that the bridge checks. Leave it as the insta
 | `/etc/udev/rules.d/70-bose-receiver.rules` | The receiver rule, if you gave receiver vendor and product. |
 | `~bose/.ssh/authorized_keys` | The one restricted key line the installer writes. |
 
-The serial adapter is opened by its path under `/dev/serial/by-id/` at 4800 baud, 8 data bits, no parity and 1 stop bit. The bridge does not open it until it is configured, and it never sends anything at startup.
+The serial adapter is opened by its path under `/dev/serial/by-id/` at 4800 baud, 8 data bits, no parity & 1 stop bit. The bridge doesn't open it until it is configured, & it never sends anything at startup.
 
 Home Assistant side:
 
@@ -87,25 +87,25 @@ Home Assistant side:
 
 ## Status
 
-The `status` command shows whether the bridge runs and the last command transmitted. It does not report current room power, source, volume or mute; the project has no verified query for live room state. `Last command sent` is a command record, not a claim that the room is currently in that state.
+The `status` command shows whether the bridge runs & the last command transmitted. It doesn't report current room power, source, volume or mute; the project has no verified query for live room state. `Last command sent` is a command record, not a claim that the room is currently in that state.
 
 - `Bridge: running (live mode); serial port open; fault: none`, or `Bridge: not running (saved configuration)`.
-- `Last command sent: room-b-volume-up (transmitted-with-matching-response)` shows the last recorded transmission and its response outcome, or `none recorded` / `unavailable (bridge stopped)` when there is no live transmission record.
+- `Last command sent: room-b-volume-up (transmitted-with-matching-response)` shows the last recorded transmission & its response outcome, or `none recorded` / `unavailable (bridge stopped)` when there is no live transmission record.
 - `Unverified commands allowed for:`, `IR target:`, `Volume steps per press:`.
 
 The status returned by the bridge's socket is a JSON object with these parts:
 
-- `bridge`: `mode` (live or dry-run), `serial_open`, `fault` (the reason for a pause, or null), `recovery`, `config` (`ok`, `config-invalid` or `config-uncertain`), `ir_configured`, `ir_attached`, `last_outcome` and `last_transmission`.
-- `config`: the four configuration parts, or null if the configuration is not valid.
-- `actions`: each command name, its room, its function, whether it is verified, and whether it is allowed now. `allowed` is false for every action while the bridge is faulted or in dry-run, even if the configuration would allow it.
-- `ir`: the receiver and remote state.
-- `rooms`: power, source, volume and mute for each room. The bridge cannot read these from the Bose unit, so each value is unknown.
+- `bridge`: `mode` (live or dry-run), `serial_open`, `fault` (the reason for a pause, or null), `recovery`, `config` (`ok`, `config-invalid` or `config-uncertain`), `ir_configured`, `ir_attached`, `last_outcome` & `last_transmission`.
+- `config`: the four configuration parts, or null if the configuration isn't valid.
+- `actions`: each command name, its room, its function, whether it is verified, & whether it is allowed now. `allowed` is false for every action while the bridge is faulted or in dry-run, even if the configuration would allow it.
+- `ir`: the receiver & remote state.
+- `rooms`: power, source, volume & mute for each room. The bridge can't read these from the Bose unit, so each value is unknown.
 
 ## Commands the bridge can send
 
-The bridge sends only catalogued commands. A command is allowed only when its room is turned on, its input is connected (for source commands), and it is either verified or the room allows unverified commands.
+The bridge sends only catalogued commands. A command is allowed only when its room is turned on, its input is connected (for source commands), & it is either verified or the room allows unverified commands.
 
-The bridge's catalog marks each command as verified or not. [Commands](commands.md) lists every command with its status and how it was verified. Rooms A, B and C have 41 verified commands: power, volume, mute, and every input (AM, auxiliary, Video 1, Video 2, FM, CD and Tape). Room D has no verified commands. Unverified commands are allowed only through `experimental` for the room, and Room D also needs the explicit confirmation.
+The bridge's catalog marks each command as verified or not. [Commands](commands.md) lists every command with its status & how it was verified. Rooms A, B & C have 41 verified commands: power, volume, mute, & every input (AM, auxiliary, Video 1, Video 2, FM, CD & Tape). Room D has no verified commands. Unverified commands are allowed only through `experimental` for the room, & Room D also needs the explicit confirmation.
 
 The identify command is read-only. It is sent only by `identify --yes` to a running bridge.
 
@@ -137,7 +137,7 @@ Messages from the command line:
 | The bridge did not identify the controller. Nothing was changed. | The identify reply was not the expected one. |
 | Something went wrong. Nothing was changed. | An unexpected error. Nothing was changed. |
 
-Messages from the bridge's command replies, which the card and Home Assistant show in plain words:
+Messages from the bridge's command replies, which the card & Home Assistant show in plain words:
 
 | Reply | Plain words shown to people |
 |---|---|
@@ -153,17 +153,23 @@ Pairing messages from the Home Assistant integration are listed in [Fix a proble
 
 ## Security model
 
-- **Restricted SSH.** Home Assistant reaches the bridge computer over SSH with one ed25519 key. The installer writes that key with a forced command: `command="/opt/bose-lifestyle/bose_request.py",restrict`. `restrict` turns off forwarding, terminals and other extras. The command runs only `status`, `events`, `manage`, `fault-clear` and the catalogued Bose commands. Anything else is refused.
+- **Restricted SSH.** Home Assistant reaches the bridge computer over SSH with one ed25519 key. The installer writes that key with a forced command: `command="/opt/bose-lifestyle/bose_request.py",restrict`. `restrict` turns off forwarding, terminals & other extras. The command runs only `status`, `events`, `manage`, `fault-clear` & the catalogued Bose commands. Anything else is refused.
 - **Source limits.** You can limit which addresses may use the key. Give the installer's `--from` option once for each address or CIDR range. The installer checks each value before writing anything.
-- **Home folder.** The key goes in the `.ssh` folder of the account's home folder. The installer uses that home only if it exists and belongs to the account, root or the person running the installer. Give `--allow-custom-home` to use a different home folder, and `--create-home` to create a missing one (mode 0700, owned by the account). The installer does not follow symbolic links for the home folder, `.ssh`, `authorized_keys` or the state folder (`/var/lib/bose-control` under the root being installed).
-- **Client side.** Home Assistant runs `ssh` with key-only authentication, the pinned host key, `StrictHostKeyChecking=yes`, one connection attempt, a five-second limit and capped output. It never retries a command.
-- **The bridge.** Apart from the loopback diagnostic below, it is the only program that opens the serial port. It sends a command only if the configuration allows it. It never sends anything at startup, never replays a command and never retries one. With `volume_steps` above 1, one volume press is several separate commands, each one checked by the same gate and the same reply check and at least a quarter second after the previous one. A press has a time budget of about three and a half seconds on the bridge computer, measured from its first step: no step is started that could not finish inside it, and the serial operations of each step are limited to the time left, so a slow adapter ends the press early (as uncertain, or with a latched fault if the adapter's reply was cut short). A bridge that is shutting down sends no further steps after the one in progress. The budget is the bridge's own; Home Assistant's five-second request timer also includes SSH set-up. Input that arrives while a multi-step press is running is dropped, not run afterward. The first problem stops the press and it is reported as uncertain: an unexpected reply latches the fault as usual, and a command that cannot be written (the adapter was lost, or the room was switched off mid-press) stops it without a fault. Steps already sent are never undone. If the Bose unit replies in an unexpected way, the bridge pauses its commands until someone investigates.
-- **Identify.** Of the supported `bose-lifestyle` commands, only `identify --yes` sends the identify command, and it sends only to a running bridge. The restricted SSH command also accepts the catalogued `identify` action, which Home Assistant does not use.
-- **Loopback diagnostic.** `bose_serial.py loopback` is the one other program that can open the serial port. By default it is a dry run; it opens a port only with `--live-loopback`, on the port selected by `--port PATH`, and it is meant for a serial adapter that is not connected to the Bose unit.
-- **What is read back.** The bridge checks each command's reply against the reply it expects. It does not read the rooms' power, volume, source or mute from the Bose unit. Those values are shown as unknown.
-- **Keys and secrets.** The private pairing key, the pinned host key and the authorized key line are not shown in logs or messages.
+- **Home folder.** The key goes in the `.ssh` folder of the account's home folder. The installer uses that home only if it exists & belongs to the account, root or the person running the installer. Give `--allow-custom-home` to use a different home folder, & `--create-home` to create a missing one (mode 0700, owned by the account). The installer doesn't follow symbolic links for the home folder, `.ssh`, `authorized_keys` or the state folder (`/var/lib/bose-control` under the root being installed).
+- **Client side.** Home Assistant runs `ssh` with key-only authentication, the pinned host key, `StrictHostKeyChecking=yes`, one connection attempt, a five-second limit & capped output. It never retries a command.
+- **The bridge.** Apart from the loopback diagnostic below, it is the only program that opens the serial port. It sends a command only if the configuration allows it. It never sends anything at startup, never replays a command & never retries one. With `volume_steps` above 1, one volume press is several separate commands, each one checked by the same gate & the same reply check & at least a quarter second after the previous one.
+
+  A press has a time budget of about three and a half seconds on the bridge computer, measured from its first step: no step is started that couldn't finish inside it, & the serial operations of each step are limited to the time left, so a slow adapter ends the press early (as uncertain, or with a latched fault if the adapter's reply was cut short). A bridge that is shutting down sends no further steps after the one in progress.
+
+  The budget is the bridge's own; Home Assistant's five-second request timer also includes SSH set-up. Input that arrives while a multi-step press is running is dropped, not run afterward.
+
+  The first problem stops the press & it is reported as uncertain: an unexpected reply latches the fault as usual, & a command that can't be written (the adapter was lost, or the room was switched off mid-press) stops it without a fault. Steps already sent are never undone. If the Bose unit replies in an unexpected way, the bridge pauses its commands until someone investigates.
+- **Identify.** Of the supported `bose-lifestyle` commands, only `identify --yes` sends the identify command, & it sends only to a running bridge. The restricted SSH command also accepts the catalogued `identify` action, which Home Assistant doesn't use.
+- **Loopback diagnostic.** `bose_serial.py loopback` is the one other program that can open the serial port. By default it is a dry run; it opens a port only with `--live-loopback`, on the port selected by `--port PATH`, & it is meant for a serial adapter that isn't connected to the Bose unit.
+- **What is read back.** The bridge checks each command's reply against the reply it expects. It doesn't read the rooms' power, volume, source or mute from the Bose unit. Those values are shown as unknown.
+- **Keys and secrets.** The private pairing key, the pinned host key & the authorized key line aren't shown in logs or messages.
 
 ## Technical notes
 
 - `ir verify` prints the raw scan codes as `Scan codes seen:`. They arrive as Linux input events of type MSC with code MSC_SCAN (4), before the key code.
-- `ir learn --technical` prints each press's scan code as `Scan code:`, and the code mapped to each button.
+- `ir learn --technical` prints each press's scan code as `Scan code:`, & the code mapped to each button.

@@ -1,20 +1,20 @@
 # Uninstall
 
-Remove everything created by the installer and the Home Assistant integration in this order: Home Assistant first, then the bridge computer. Back up first if you may want the system back later (see [Update, back up and recover](update-backup-recover.md)).
+Remove everything created by the installer & the Home Assistant integration in this order: Home Assistant first, then the bridge computer. Back up first if you may want the system back later (see [Update, back up and recover](update-backup-recover.md)).
 
-Removing the bridge stops room control. Tell the household first, and make sure they have the original Bose remote.
+Removing the bridge stops room control. Tell the household first, & make sure they have the original Bose remote.
 
 ## Part 1: Home Assistant
 
 Where: Home Assistant and its configuration folder.
 
-1. Delete the integration. In Home Assistant, open Settings, Devices and services, Bose Lifestyle Assistant, and choose Delete. This removes the integration's entries, its entities and its remote entries.
+1. Delete the integration. In Home Assistant, open Settings, Devices and services, Bose Lifestyle Assistant, & choose Delete. This removes the integration's entries, its entities & its remote entries.
 2. Delete the integration's files: the `custom_components/bose_lifestyle` folder in the configuration folder. If you installed the integration with a tool, remove it with that tool instead.
 3. Delete the pairing files in the `.ssh` folder of the configuration folder:
    - `.ssh/bose_ed25519`, the private pairing key.
    - `.ssh/bose_known_hosts`, the pinned host key.
    - Any `.ssh/bose-` control socket files left over. These are short-lived. Leave every other file in `.ssh` alone.
-4. Delete `.storage/bose_lifestyle.rooms`. Deleting the integration does not remove this file. It holds the room names, input nicknames and icons.
+4. Delete `.storage/bose_lifestyle.rooms`. Deleting the integration doesn't remove this file. It holds the room names, input nicknames & icons.
 5. Restart Home Assistant itself.
 
 Expected: the Bose Lifestyle Assistant integration no longer appears under Devices and services.
@@ -25,7 +25,7 @@ If not: if the integration is still listed, delete it again from its page. Do no
 
 Where: the bridge computer. Run the commands as an administrator, in this order.
 
-1. Stop the service and stop it from starting again. Stopping sends nothing to the Bose unit.
+1. Stop the service & stop it from starting again. Stopping sends nothing to the Bose unit.
 
    ```
    sudo systemctl disable --now bose-bridge.service
@@ -45,15 +45,15 @@ Where: the bridge computer. Run the commands as an administrator, in this order.
    sudo udevadm control --reload-rules
    ```
 
-4. Remove the restricted key line. Open `/home/bose/.ssh/authorized_keys` in an editor as an administrator and delete the line that begins with `command="/opt/bose-lifestyle/bose_request.py",restrict`. Save the file. If it has no other lines, delete the file. Delete the `.ssh` folder only if it is empty and you did not have one before.
+4. Remove the restricted key line. Open `/home/bose/.ssh/authorized_keys` in an editor as an administrator & delete the line that begins with `command="/opt/bose-lifestyle/bose_request.py",restrict`. Save the file. If it has no other lines, delete the file. Delete the `.ssh` folder only if it is empty & you didn't have one before.
 
-5. Remove the program files and the Python cache folders that the service may have created inside them:
+5. Remove the program files & the Python cache folders that the service may have created inside them:
 
    ```
    sudo rm -r /opt/bose-lifestyle
    ```
 
-6. Remove the state folder. This deletes the configuration, the receiver file, the infrared state and the event log, including `events.jsonl.1` if it exists. Make a backup first if you may want them.
+6. Remove the state folder. This deletes the configuration, the receiver file, the infrared state & the event log, including `events.jsonl.1` if it exists. Make a backup first if you may want them.
 
    ```
    sudo rm -r /var/lib/bose-control
@@ -71,11 +71,11 @@ Where: the bridge computer. Run the commands as an administrator, in this order.
    rm -f ~/bose-cli-key ~/bose-cli-key.pub
    ```
 
-The installer does not create the `bose` user, does not add anyone to a group, and does not install Python packages or the SSH server. Uninstalling does not remove them either. Remove any of them yourself only if you added them for this project alone.
+The installer doesn't create the `bose` user, doesn't add anyone to a group, & doesn't install Python packages or the SSH server. Uninstalling doesn't remove them either. Remove any of them yourself only if you added them for this project alone.
 
 ## What the installer created
 
-These are all the paths and entries the installer creates, with their removal steps:
+These are all the paths & entries the installer creates, with their removal steps:
 
 | Created by the installer | Removed in step |
 |---|---|
@@ -91,7 +91,7 @@ These are all the paths and entries the installer creates, with their removal st
 | Python cache folders (`__pycache__`) created by the service inside `/opt/bose-lifestyle/` | 5 |
 | `~/bose-cli-key` and `~/bose-cli-key.pub` (made by you for the command-line route) | 8 |
 
-On Home Assistant: `custom_components/bose_lifestyle/`, `.ssh/bose_ed25519`, `.ssh/bose_known_hosts`, `.ssh/bose-` control socket files, and `.storage/bose_lifestyle.rooms`.
+On Home Assistant: `custom_components/bose_lifestyle/`, `.ssh/bose_ed25519`, `.ssh/bose_known_hosts`, `.ssh/bose-` control socket files, & `.storage/bose_lifestyle.rooms`.
 
 ## Check that it is gone
 

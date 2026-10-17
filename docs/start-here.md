@@ -4,7 +4,7 @@ This project connects a Bose Lifestyle system to Home Assistant, or to a command
 
 Unofficial community project. Not affiliated with or endorsed by Bose Corporation. "Bose" and "Lifestyle" are trademarks of Bose Corporation, used here only to identify compatible products.
 
-Follow these rules throughout setup and use:
+Follow these rules throughout setup & use:
 
 - Never power-cycle the M1 control unit. It may fail to re-link the remote.
 - Do not connect a serial adapter to the M1 until you have checked its signal levels (see [Hardware](hardware.md)).
@@ -25,9 +25,9 @@ Follow these rules throughout setup and use:
 
 ## What you need
 
-- A Linux computer with systemd and udev, Python 3.9 or newer, and an SSH server.
-- A serial adapter between the bridge computer and the M1 (see [Hardware](hardware.md)).
+- A Linux computer with systemd & udev, Python 3.9 or newer, & an SSH server.
+- A serial adapter between the bridge computer & the M1 (see [Hardware](hardware.md)).
 - Optional: a key-reporting infrared receiver with a stable `/dev/input/by-id/` path.
 - Optional: Home Assistant, if you want the room controls in Home Assistant.
 
-Newer Bose speakers are not covered here. For those, see the link in the [README](../README.md).
+Newer Bose speakers aren't covered here. For those, see the link in the [README](../README.md).

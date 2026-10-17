@@ -1,6 +1,6 @@
 # Fix a problem
 
-Find the symptom, then read the section for your role. The household section uses only the daily controls. The installer section uses the command line and the service logs.
+Find the symptom, then read the section for your role. The household section uses only the daily controls. The installer section uses the command line & the service logs.
 
 ## Household
 
@@ -19,11 +19,11 @@ These steps require no settings changes or command line.
 | The infrared remote does nothing. | Ask the installer to check which room the remote controls (the card's settings show it under **Infrared remote**: "This remote controls"), and to check that the remote's buttons are taught and turned on. |
 | The infrared remote's Mute press did the wrong thing after a restart. | The bridge forgets the last mute state when it restarts, so the next Mute press sends Mute. Check the room. |
 
-Clearing the fault latch removes only the bridge's in-memory stop. It sends no Bose command and does not test whether the M1 responds. Do not repeat a press that may not have been sent.
+Clearing the fault latch removes only the bridge's in-memory stop. It sends no Bose command & doesn't test whether the M1 responds. Do not repeat a press that may not have been sent.
 
 ## Installer
 
-Read the messages with the commands in [Reference](reference.md). Run the command line as the bridge user, `sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle`. Never restart or power-cycle the Bose unit to fix a problem. Restart only the bridge service, and only where a step says so.
+Read the messages with the commands in [Reference](reference.md). Run the command line as the bridge user, `sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle`. Never restart or power-cycle the Bose unit to fix a problem. Restart only the bridge service, & only where a step says so.
 
 ### The bridge is not running
 
@@ -37,10 +37,10 @@ journalctl -u bose-bridge.service -n 50
 
 Look for these causes in the journal:
 
-- **A missing Python package.** An error about `serial` or `evdev` means the package is not installed. Install `pyserial` and, with a receiver, `evdev`, then start the service again. The installer checks for both before it writes anything, so a run that stopped with `the Python package ... is not installed` changed nothing.
+- **A missing Python package.** An error about `serial` or `evdev` means the package isn't installed. Install `pyserial` and, with a receiver, `evdev`, then start the service again. The installer checks for both before it writes anything, so a run that stopped with `the Python package ... is not installed` changed nothing.
 - **A missing receiver file.** If the installer was given receiver options, the service expects `ir-config.json`. Save the receiver with `ir select` before you start the service. See [Receivers](receivers.md).
 - **A restart loop.** If the service keeps restarting, the journal shows the same error each time. Fix that error first.
-- **A damaged remote state file.** The journal says `IR state file ... is damaged` and the service stops with status 20 instead of restarting. The file, `ir-state.json`, holds the bridge's pairing identity and the learned remotes, so the bridge never overwrites it. Check it with `sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle state check`. To recover, stop the service, then either restore a backup with `state restore --from BACKUP --yes`, or start over with `state reset --keep-identity --yes`, which keeps Home Assistant paired and forgets the learned remotes, or `state reset --new-identity --yes`, which also needs Home Assistant to be paired again. Every recovery keeps a copy of the damaged file next to it. Then start the service.
+- **A damaged remote state file.** The journal says `IR state file ... is damaged` & the service stops with status 20 instead of restarting. The file, `ir-state.json`, holds the bridge's pairing identity & the learned remotes, so the bridge never overwrites it. Check it with `sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle state check`. To recover, stop the service, then either restore a backup with `state restore --from BACKUP --yes`, or start over with `state reset --keep-identity --yes`, which keeps Home Assistant paired & forgets the learned remotes, or `state reset --new-identity --yes`, which also needs Home Assistant to be paired again. Every recovery keeps a copy of the damaged file next to it. Then start the service.
 
 Start the service with `sudo systemctl enable --now bose-bridge.service` once the cause is fixed.
 
@@ -57,28 +57,28 @@ The receiver group is needed here because `ir list` also checks the receiver. Wi
 - **No learned remote is listed.** The buttons were never taught. Teach them with `ir learn --name NAME` (see [Receivers](receivers.md)), or in Home Assistant with Add remote.
 - **The remote is listed with `remote off`.** Turn it on with `ir remote ID on`, then turn on each button you want with `ir button ID KEY on`.
 - **A button shows `not learned`.** That button was skipped. Learn the remote again.
-- **Everything is on, but nothing happens.** Check that the receiver is saved and that the bridge is running. The bridge matches presses only for buttons that are taught and turned on.
+- **Everything is on, but nothing happens.** Check that the receiver is saved & that the bridge is running. The bridge matches presses only for buttons that are taught & turned on.
 
-The receiver is listed and the bridge runs, but the remote still does nothing: run `ir verify` with the receiver's path and press a button. Key codes shown there mean the receiver works. Learning maps buttons; verify does not.
+The receiver is listed & the bridge runs, but the remote still does nothing: run `ir verify` with the receiver's path & press a button. Key codes shown there mean the receiver works. Learning maps buttons; verify doesn't.
 
 ### The serial port is closed
 
-`status` shows `serial port closed`, and `events` shows `serial closed` or `serial port not configured`.
+`status` shows `serial port closed`, & `events` shows `serial closed` or `serial port not configured`.
 
-- **Not configured.** The installer was run without `--serial-device`. Run it again with the adapter's by-id path. The installer does not change the saved configuration.
-- **Configured but not open.** The bridge tries to open the exact path every few seconds. Check that the adapter is connected, and that its path under `/dev/serial/by-id/` is the same as in the service. Run `ls -l /dev/serial/by-id/` to see the current name.
+- **Not configured.** The installer was run without `--serial-device`. Run it again with the adapter's by-id path. The installer doesn't change the saved configuration.
+- **Configured but not open.** The bridge tries to open the exact path every few seconds. Check that the adapter is connected, & that its path under `/dev/serial/by-id/` is the same as in the service. Run `ls -l /dev/serial/by-id/` to see the current name.
 
 ### A pause is latched
 
-`status` shows a fault, and `events` shows a `fault` entry. The bridge stopped sending commands after an unexpected reply or a serial failure, so the household sees the pause message.
+`status` shows a fault, & `events` shows a `fault` entry. The bridge stopped sending commands after an unexpected reply or a serial failure, so the household sees the pause message.
 
-1. Read `events` and the journal for the fault entry. Do not send commands from the card while you investigate.
-2. Check the Bose unit with the original remote, and check the cable and the adapter.
-3. After the investigation, clear only the bridge's in-memory fault latch. In Home Assistant, open the Controller device and press **Clear fault latch**, or run `bose-lifestyle fault clear` on the bridge computer.
+1. Read `events` & the journal for the fault entry. Do not send commands from the card while you investigate.
+2. Check the Bose unit with the original remote, & check the cable & the adapter.
+3. After the investigation, clear only the bridge's in-memory fault latch. In Home Assistant, open the Controller device & press **Clear fault latch**, or run `bose-lifestyle fault clear` on the bridge computer.
 
-Clearing sends no Bose bytes, does not retry a command, and does not verify that the M1 responds. If the bridge is unreachable, clearing fails without an offline fallback. The bridge's existing loop continues trying to reopen the serial port. Check `status`, but verify bridge-to-M1 communication separately before relying on app controls. If the fault returns, stop and ask for help.
+Clearing sends no Bose bytes, doesn't retry a command, & doesn't verify that the M1 responds. If the bridge is unreachable, clearing fails without an offline fallback. The bridge's existing loop continues trying to reopen the serial port. Check `status`, but verify bridge-to-M1 communication separately before relying on app controls. If the fault returns, stop & ask for help.
 
-Restart the bridge service only for separate service maintenance: `sudo systemctl restart bose-bridge.service`. This also resets the in-memory latch, but does not verify M1 communication. Never restart or power-cycle the Bose unit.
+Restart the bridge service only for separate service maintenance: `sudo systemctl restart bose-bridge.service`. This also resets the in-memory latch, but doesn't verify M1 communication. Never restart or power-cycle the Bose unit.
 
 ### Messages from the command line
 
@@ -154,7 +154,7 @@ Running the installer again is always safe.
 
 ### Checking events
 
-`events` shows recent entries, with the time, the kind, the action and the detail. Kinds include `start`, `serial`, `ir`, `manage`, `outcome`, `tx`, `rx`, `refused` and `fault`.
+`events` shows recent entries, with the time, the kind, the action & the detail. Kinds include `start`, `serial`, `ir`, `manage`, `outcome`, `tx`, `rx`, `refused` & `fault`.
 
 ```
 sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle events --count 50
