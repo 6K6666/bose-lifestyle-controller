@@ -987,7 +987,7 @@
       if (event.key === 'Escape') { this.focusNext = this.opener; c.closeSettings(); return; }
       if (event.key !== 'Tab') return;
       // Focus stays inside the open sheet: Tab past the last control wraps to the first, and back again.
-      const items = [...this.rootEl.querySelectorAll('button:not([disabled]), input:not([disabled]), a[href], summary')];
+      const items = [...this.rootEl.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], summary')];
       if (!items.length) return;
       const active = this.shadowRoot.activeElement;
       const first = items[0], last = items[items.length - 1];

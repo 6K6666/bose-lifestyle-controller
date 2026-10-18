@@ -49,22 +49,27 @@ async function testRegistrySwap() {
     define(tag, element) {
       if (this.elements.has(tag)) throw new Error(`${tag} already defined`);
       this.elements.set(tag, element);
-      this.waiters.get(tag)?.(element);
+      for (const resolve of this.waiters.get(tag) || []) resolve(element);
     }
     get(tag) { return this.elements.get(tag); }
     whenDefined(tag) {
       const element = this.get(tag);
-      return element ? Promise.resolve(element) : new Promise(resolve => this.waiters.set(tag, resolve));
+      return element ? Promise.resolve(element) : new Promise(resolve => {
+        this.waiters.set(tag, [...(this.waiters.get(tag) || []), resolve]);
+      });
     }
   }
   const native = new Registry();
   const window = { customElements: native, customCards: [] };
-  const context = { window, HTMLElement: class {}, setTimeout };
+  const context = { window, customElements: native, HTMLElement: class {}, setTimeout };
   context.globalThis = context;
   vm.runInNewContext(fs.readFileSync(require.resolve('../custom_components/bose_lifestyle/frontend/bose-control-card.js'), 'utf8'), context);
   const card = native.get('bose-control-card');
   const viewStrategy = native.get('ll-strategy-view-bose-control');
   const dashboardStrategy = native.get('ll-strategy-dashboard-bose-control');
+  for (const [name, element] of Object.entries({ card, viewStrategy, dashboardStrategy })) {
+    assert.equal(typeof element, 'function', `${name} must be registered before the registry swap`);
+  }
   const replacement = new Registry();
   window.customElements = replacement;
   context.globalThis.customElements = replacement;
@@ -984,6 +989,36 @@ const { irLine, REASON_TEXT } = globalThis.BoseCard;
     d.resolve({ rooms: [], setup: { sources: [] } });
     await Promise.all([a, b]);
     assert.equal(sent, 1, 'the second submit is ignored while the first is pending');
+  };
+
+  tests.test_setup_dropdowns_keep_normal_tab_order = async () => {
+    const { card, shadow } = mountCard();
+    card.controller.sheet = {};
+    const nodes = ['button', 'select', 'input', 'select'].map(tag => ({
+      tag, disabled: false, focus() { shadow.activeElement = this; },
+    }));
+    // Model the browser selector: omitted element types must not silently appear in its results.
+    card.rootEl.querySelectorAll = selector => nodes.filter(node =>
+      selector.split(',').some(part => part.trim() === `${node.tag}:not([disabled])`) && !node.disabled);
+    const tab = shiftKey => {
+      let prevented = false;
+      fire(card, 'keydown', { key: 'Tab', shiftKey, preventDefault() { prevented = true; } });
+      return prevented;
+    };
+    for (const shiftKey of [false, true]) {
+      shadow.activeElement = nodes[1];
+      assert.equal(tab(shiftKey), false, 'Tab from an interior dropdown must follow browser focus order');
+      assert.equal(shadow.activeElement, nodes[1], 'the handler must not move an interior dropdown focus');
+    }
+    shadow.activeElement = nodes[3];
+    assert.equal(tab(false), true);
+    assert.equal(shadow.activeElement, nodes[0], 'the final dropdown wraps to the first control');
+    assert.equal(tab(true), true);
+    assert.equal(shadow.activeElement, nodes[3], 'backward wrap includes the final dropdown');
+    nodes[3].disabled = true;
+    shadow.activeElement = nodes[0];
+    assert.equal(tab(true), true);
+    assert.equal(shadow.activeElement, nodes[2], 'disabled dropdowns are excluded');
   };
 
   tests.test_controls_have_min_target_size_in_css = async () => {

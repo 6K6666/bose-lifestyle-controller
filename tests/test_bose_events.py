@@ -49,6 +49,16 @@ with tempfile.TemporaryDirectory() as tmp:
     Path(tmp, 'mixed.jsonl').write_text('not json\n{"t":1}\n' + json.dumps({'t': 1.0, 'kind': 'tx', 'action': None, 'detail': 'ok'}) + '\n\xff\n')
     assert [e['detail'] for e in EventLog(tmp + '/mixed.jsonl').recent()] == ['ok']
 
+    # A damaged line must not prevent valid neighboring history from being read or returned to clients.
+    valid = {'t': 1.0, 'kind': 'tx', 'action': None, 'detail': 'survives'}
+    damaged = [dict(valid, kind=[]), dict(valid, kind={}), dict(valid, t=10**400),
+               dict(valid, detail='x' * 201)]
+    for bad in [json.dumps(event) for event in damaged] + ['[' * 1500 + ']' * 1500]:
+        Path(tmp, 'damaged.jsonl').write_text(json.dumps(valid) + '\n' + bad + '\n' + json.dumps(valid) + '\n')
+        recovered = EventLog(tmp + '/damaged.jsonl').recent()
+        assert recovered == [valid, valid], 'damaged event hid valid history or escaped validation'
+        assert validate_events(json.dumps({'events': recovered})) == recovered
+
     Path(tmp, 'blocker').write_text('x')
     broken, out = EventLog(tmp + '/blocker/events.jsonl'), io.StringIO()
     with contextlib.redirect_stdout(out):

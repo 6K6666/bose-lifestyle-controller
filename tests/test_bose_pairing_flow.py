@@ -3,21 +3,24 @@ import _bootstrap
 import asyncio
 import inspect
 import base64
+import copy
 import contextlib
 import json
 import shutil
 import struct
 import tempfile
+import time
 from pathlib import Path
 from unittest.mock import patch
 from homeassistant.core import HomeAssistant
 from homeassistant import loader, bootstrap
 from homeassistant.config_entries import ConfigEntries
 from custom_components.bose_lifestyle import pairing
-from custom_components.bose_lifestyle.client import Client, BridgeError
+from custom_components.bose_lifestyle.client import Client, BridgeError, validate_status
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPONENT = ROOT / 'custom_components' / 'bose_lifestyle'
+STATUS = validate_status((ROOT / 'tests' / 'fixtures' / 'status_v4.json').read_text())
 BLOB = struct.pack('>I', 11) + b'ssh-ed25519' + struct.pack('>I', 32) + bytes(range(32))
 KEY = base64.b64encode(BLOB).decode()
 HOSTLINE = 'bridge.example.invalid ssh-ed25519 ' + KEY
@@ -47,7 +50,9 @@ async def harness():
 def fake_status(bridge_id=None, error=None):
     async def call(self, action, payload=None):
         if error: raise BridgeError(error)
-        return {'bridge_id': bridge_id, 'ir': {'profiles': {}}}
+        status = copy.deepcopy(STATUS)
+        status.update(bridge_id=bridge_id, generated_at=time.time())
+        return validate_status(json.dumps(status))
     return call
 
 
@@ -107,7 +112,11 @@ async def test_flow_pins_host_key_only_after_confirm():
             assert not known_hosts(config).exists()
             with patch.object(Client, 'call', fake_status('b' * 32)):
                 done = await hass.config_entries.flow.async_configure(fingerprint['flow_id'], {'fingerprint': FINGERPRINT})
-            assert done['type'] == 'create_entry', done
+                assert done['type'] == 'create_entry', done
+                await hass.async_block_till_done()
+            entry = done['result']
+            assert entry.runtime_data.fresh, 'the paired entry completes its first validated status poll'
+            assert entry.runtime_data.data['bridge_id'] == entry.unique_id
             assert known_hosts(config).read_text() == HOSTLINE + '\n'
 
 

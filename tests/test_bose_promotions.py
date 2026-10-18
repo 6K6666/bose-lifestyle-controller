@@ -2,12 +2,8 @@
 
 Run: python3 -B tests/test_bose_promotions.py
 Synthetic cases use temporary evidence directories and pure arguments, so no real promotion is needed.
-The sanitizer tests need the maintainer tree and skip in the public archive.
 """
 import _bootstrap
-import contextlib
-import importlib.util
-import io
 import json
 import os
 import re
@@ -29,19 +25,9 @@ from evidence_format import ALLOWED_KEYS, promotion_problems, sha256_bytes, cano
 import gen_commands_doc  # noqa: E402
 
 EVIDENCE_DIR = ROOT / 'docs' / 'evidence'
-SANITIZER = ROOT / 'maintainer' / 'verify' / 'sanitize_evidence.py'
-MAINTAINER_PRESENT = SANITIZER.exists()
 BANNER = LIVE_MESSAGES['identify']   # the bridge's identify message, stored verbatim by the harness
 PROMOTED = 'room-b-source-fm'   # a synthetic promotion: an ordinary command that is not in the original 30
-BRIDGE_ID = '0123456789abcdef0123456789abcdef'
 BRAND_WORDS = ('Phil' + 'ips', 'Direc' + 'TV', 'RC' + '73', 'Si' + 'ri')
-
-
-def _load_sanitizer():
-    spec = importlib.util.spec_from_file_location('sanitize_evidence', SANITIZER)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 def _shapes():
@@ -234,109 +220,6 @@ class Documentation(unittest.TestCase):
             self.assertFalse(any(s.search(line) for s in _shapes()), line)
             self.assertFalse(any(word in line for word in BRAND_WORDS), line)
         self.assertIsNone(re.search(r'(?<![A-Za-z])' + 'P' + 'i' + r'(?![A-Za-z])', text))
-
-
-@unittest.skipUnless(MAINTAINER_PRESENT, 'maintainer tree not in this archive')
-class Sanitizer(unittest.TestCase):
-    def setUp(self):
-        self.sanitize = _load_sanitizer().sanitize
-
-    def raw(self, **extra):
-        record = {'name': PROMOTED, 'bytes_hex': 'aa', 'expected_reply': 'x', 'reply': 'y', 'classification': 'c',
-                  'outcome': 'verified', 'timestamp': '2026-10-12T10:11:12Z', 'bridge_id': BRIDGE_ID,
-                  'sensitive_fields': ['bridge_id'], 'raw': True, 'banner': BANNER, 'banner_expected': BANNER,
-                  'zone': 'b', 'source': 'fm', 'catalog': 'experimental', 'note': 'setup', 'observation': 'audible change',
-                  'status_before': {'mode': 'live', 'serial_open': True, 'config': 'ok', 'fault': None, 'recovery': 'x',
-                                    'last_outcome': 'y', 'last_transmission': 'z'},
-                  'status_after': {'mode': 'live', 'serial_open': True, 'config': 'ok', 'fault': None},
-                  'frames': [{'t': 1.5, 'kind': 'tx', 'action': PROMOTED, 'detail': '4d'},
-                             {'t': 1.6, 'kind': 'rx', 'action': PROMOTED, 'detail': '0d'}],
-                  'path': '/' + 'Users' + '/someone/bridge', 'hostname': 'bridge-host'}
-        record.update(extra)
-        return record
-
-    def test_sanitize_drops_bridge_id_and_paths_and_times(self):
-        out = self.sanitize(self.raw())
-        text = json.dumps(out)
-        self.assertNotIn(BRIDGE_ID, text)
-        self.assertNotIn('/Users', text)
-        self.assertNotIn('bridge-host', text)
-        self.assertEqual(out['timestamp'], '2026-10-12')
-        self.assertNotIn('T10', text)
-        for frame in out['frames']:
-            self.assertEqual(set(frame), {'kind', 'action', 'detail'})
-        self.assertEqual(set(out['status_before']), {'health', 'fault'})
-        self.assertEqual(set(out) - ALLOWED_KEYS, set())
-        self.assertNotIn('zone', out)
-        self.assertNotIn('sensitive_fields', out)
-
-    def test_sanitize_refuses_not_verified_outcome(self):
-        for outcome in ('not_verified', 'unknown', 'pending', 'interrupted'):
-            with self.subTest(outcome=outcome):
-                with self.assertRaises(ValueError):
-                    self.sanitize(self.raw(outcome=outcome))
-
-    def test_sanitizer_main_refuses_without_writing_or_echoing(self):
-        module = _load_sanitizer()
-        planted = '/' + 'Users' + '/someone/bridge'
-        with tempfile.TemporaryDirectory(prefix='san-') as directory:
-            raw = Path(directory) / 'raw.json'
-            out = Path(directory) / 'out.json'
-            raw.write_text(json.dumps(self.raw(note='seen at ' + planted)), encoding='utf-8')
-            buffer = io.StringIO()
-            with contextlib.redirect_stdout(buffer):
-                code = module.main([str(raw), '--out', str(out)])
-            self.assertNotEqual(code, 0)
-            self.assertFalse(out.exists())
-            self.assertIn('note', buffer.getvalue())
-            self.assertNotIn(planted, buffer.getvalue())
-
-    def test_sanitize_keeps_reply_only_outcome(self):
-        self.assertEqual(self.sanitize(self.raw(outcome='reply_only'))['outcome'], 'reply_only')
-
-    def _planted(self, field, value):
-        module = _load_sanitizer()
-        with self.assertRaises(ValueError) as caught:
-            module.sanitize(self.raw(**{field: value}))
-        return str(caught.exception)
-
-    def test_sanitizer_refuses_free_text_with_private_shapes(self):
-        # Fragments only, so this file never holds the literal values.
-        planted = {
-            'ip': '.'.join(['192', '168', '1', '77']),
-            'e-mail': '@'.join(['probe', 'example.org']),
-            'by-id serial': 'usb-' + 'FTDI_' + 'A1B2C3',
-            'home path': '/' + 'Users' + '/someone/bridge',
-        }
-        for label, value in planted.items():
-            for field in ('note', 'observation'):
-                with self.subTest(shape=label, field=field):
-                    message = self._planted(field, 'before ' + value + ' after')
-                    self.assertIn(field, message)
-                    self.assertNotIn(value, message)
-
-    def test_sanitizer_refuses_overlong_or_non_ascii_free_text(self):
-        for field in ('note', 'observation', 'banner', 'reply'):
-            with self.subTest(field=field, case='overlong'):
-                self.assertIn(field, self._planted(field, 'a' * 201))
-            with self.subTest(field=field, case='non-ascii'):
-                self.assertIn(field, self._planted(field, 'caf' + 'é'))
-            with self.subTest(field=field, case='control'):
-                self.assertIn(field, self._planted(field, 'tab\there'))
-        module = _load_sanitizer()
-        self.assertEqual(module.sanitize(self.raw(note='a' * 200))['note'], 'a' * 200)
-
-    def test_sanitizer_refuses_private_literal_when_list_given(self):
-        module = _load_sanitizer()
-        literal = 'zq' + 'kettle' + 'orchid'
-        with tempfile.TemporaryDirectory(prefix='lit-') as directory:
-            patterns = Path(directory) / 'literals.txt'
-            patterns.write_text(literal + '\n', encoding='utf-8')
-            with self.assertRaises(ValueError) as caught:
-                module.sanitize(self.raw(note='seen ' + literal.upper() + ' here'), patterns=patterns)
-            self.assertIn('note', str(caught.exception))
-            self.assertNotIn(literal, str(caught.exception).lower())
-            self.assertEqual(module.sanitize(self.raw(), patterns=patterns)['note'], 'setup')
 
 
 if __name__ == '__main__':

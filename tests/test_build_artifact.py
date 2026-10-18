@@ -26,6 +26,7 @@ COMP = 'custom_components/bose_lifestyle/'
 MUST_HAVE = [
     COMP + 'manifest.json', COMP + 'card.py', COMP + 'frontend/bose-control-card.js',
     'tests/test_bose_integration.py', 'tests/test_bose_transport.py', 'tests/test_bose_compat.py',
+    'tests/test_bose_pairing.py', 'tests/test_bose_pairing_flow.py',
     'tests/_bootstrap.py',
     'bose_commands.py', 'bose_events.py', 'bose_ir.py', 'bose_request.py',
     'tests/fixtures/status_v4.json',
@@ -39,7 +40,12 @@ def tree_bytes(root):
 
 
 def copy_repo(dst):
-    shutil.copytree(REPO, dst, ignore=shutil.ignore_patterns('.git', '__pycache__'))
+    def ignored(directory, names):
+        generated = {'.git', '__pycache__', '.venv', 'venv'}
+        if Path(directory) == REPO:
+            generated.add('build')
+        return generated.intersection(names)
+    shutil.copytree(REPO, dst, ignore=ignored)
     return dst
 
 

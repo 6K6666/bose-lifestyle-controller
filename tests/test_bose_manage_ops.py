@@ -98,6 +98,17 @@ def bridge(tmp, mode='ok', config=BASELINE_CONFIG, ir=False):
             os.close(read_fd); os.close(write_fd)
 
 
+# A bounded but deeply nested request is invalid input, never a reason to stop the writer.
+with tempfile.TemporaryDirectory() as tmp, bridge(tmp) as (path, log, _):
+    before = Path(tmp, 'config.json').read_bytes(), Path(tmp, 'ir-state.json').read_bytes()
+    nested = b'{"op":"resync","muted":' + b'[' * 1500 + b']' * 1500 + b'}'
+    reply = json.loads(request(path, b'manage\n' + nested))
+    assert reply == {'ok': False, 'error': 'invalid_request'}
+    assert json.loads(request(path, b'status\n'))['bridge']['fault'] is None
+    assert before == (Path(tmp, 'config.json').read_bytes(), Path(tmp, 'ir-state.json').read_bytes())
+    assert not log.exists(), 'malformed management request transmitted serial bytes'
+
+
 def sent(log):
     if not log.exists(): return []
     return [bytes.fromhex(line[3:]) for line in log.read_text().splitlines() if line.startswith('TX ')]

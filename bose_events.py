@@ -47,12 +47,16 @@ class EventLog:
         events = []
         for part in (self.path.with_name(self.path.name + '.1'), self.path):
             for line in tail_lines(part):
-                try: event = json.loads(line)
-                except ValueError: continue
-                if (isinstance(event, dict) and set(event) == {'t', 'kind', 'action', 'detail'} and event['kind'] in KINDS
-                        and type(event['t']) in (int, float) and math.isfinite(event['t'])
-                        and (event['action'] is None or isinstance(event['action'], str)) and isinstance(event['detail'], str)):
-                    events.append(event)
+                try:
+                    event = json.loads(line)
+                    if (isinstance(event, dict) and set(event) == {'t', 'kind', 'action', 'detail'}
+                            and isinstance(event['kind'], str) and event['kind'] in KINDS
+                            and type(event['t']) in (int, float) and math.isfinite(event['t'])
+                            and (event['action'] is None or isinstance(event['action'], str))
+                            and isinstance(event['detail'], str) and len(event['detail']) <= 200):
+                        events.append(event)
+                except (ValueError, OverflowError, RecursionError):
+                    continue
         events = events[-n:]
         while events and len(json.dumps({'events': events}, separators=(',', ':'))) > max_bytes: events.pop(0)
         return events

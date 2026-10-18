@@ -21,6 +21,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -199,10 +200,10 @@ def c_results_suites(g):
         expected = expected_suites(g)
         if r.get('planned') != len(expected):
             return False, f'run_tests.sh plans {len(expected)} suite(s); the record says {r.get("planned")}'
-        passed = {s.get('name') for s in suites if s.get('exit') == 0}
-        missing = [name for name in expected if name not in passed]
+        passed = Counter(s.get('name') for s in suites if s.get('exit') == 0)
+        missing = Counter(expected) - passed
         if missing:
-            return False, f'{len(missing)} expected suite(s) missing or not exit 0'
+            return False, f'{sum(missing.values())} expected suite run(s) missing or not exit 0'
         failed = sum(1 for s in suites if s.get('exit') != 0)
         return failed == 0, f'{failed} suite(s) did not exit 0'
     return _with_record(g, check)

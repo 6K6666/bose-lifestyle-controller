@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
 from helpers import write_config  # noqa: E402
 from bose_commands import COMMANDS, LIVE_MESSAGES, zone_of  # noqa: E402
-from bose_config import SOURCES  # noqa: E402
+from bose_config import SOURCES, resolve_ir_action  # noqa: E402
 from bose_ir import RemoteManager  # noqa: E402
 from bose_request import request  # noqa: E402
 
@@ -195,15 +195,17 @@ def test_ir_target_change_resets_mute_state():
     print('A target change resets the mute state to unknown and persists it; bridge_id never changes')
 
 
-def test_zone_helpers_default_to_zone_a():
+def test_production_mute_resolution_uses_target_zone():
     with tempfile.TemporaryDirectory() as tmp:
         manager = RemoteManager(Path(tmp, 'ir-state.json'))
-        assert manager.toggle_mute() == 'room-a-mute' and manager.toggle_mute('c') == 'room-c-mute'
+        assert resolve_ir_action('mute', 'a', manager.mute_state) == 'room-a-mute'
+        assert resolve_ir_action('mute', 'c', manager.mute_state) == 'room-c-mute'
         manager.mute_state = True
-        assert manager.toggle_mute() == 'room-a-unmute' and manager.toggle_mute('d') == 'room-d-unmute'
+        assert resolve_ir_action('mute', 'a', manager.mute_state) == 'room-a-unmute'
+        assert resolve_ir_action('mute', 'd', manager.mute_state) == 'room-d-unmute'
         manager.command_succeeded('room-a-unmute')
-        assert manager.mute_state is False
-    print('toggle_mute and command_succeeded default to zone A and only track the named zone')
+        assert manager.mute_state is False and resolve_ir_action('mute', 'a', manager.mute_state) == 'room-a-mute'
+    print('Production mute resolution uses the current zone and last successful mute state')
 
 
 def test_ssh_mute_uses_target_zone():
@@ -264,7 +266,7 @@ if __name__ == '__main__':
     test_ir_disabled_or_unverified_target_transmits_nothing()
     test_ir_press_with_invalid_config_does_not_raise()
     test_ir_target_change_resets_mute_state()
-    test_zone_helpers_default_to_zone_a()
+    test_production_mute_resolution_uses_target_zone()
     test_ssh_mute_uses_target_zone()
     test_ir_profiles_unchanged_by_target_change()
     test_ir_path_with_zone_a_disabled_emits_nothing()

@@ -27,3 +27,31 @@ with patch.dict(sys.modules, {'serial': None}), patch.object(sys, 'argv', ['bose
     except SystemExit: pass
     assert routed.call_count==1, 'ordinary volume control bypassed bridge'
 print('Ordinary CLI volume routes through bridge only')
+
+# Exercise the documented diagnostic with a fake port; ordinary control above must never reach it.
+from types import SimpleNamespace
+
+class LoopbackPort:
+    def __init__(self, before=b'', reply=b'BOSE\r', partial=False):
+        self.before, self.reply, self.partial = before, reply, partial
+        self.writes = []
+    def __enter__(self): return self
+    def __exit__(self, *_): pass
+    def read(self, size): return self.reply if self.writes else self.before
+    def write(self, data):
+        self.writes.append(data)
+        return len(data) - int(self.partial)
+    def flush(self): pass
+
+for port, error in [(LoopbackPort(), None), (LoopbackPort(reply=b'bad'), 'Loopback failed'),
+                    (LoopbackPort(before=b'unexpected'), 'Stopped before transmission'),
+                    (LoopbackPort(partial=True), 'Partial write')]:
+    serial = SimpleNamespace(Serial=lambda **kwargs: port, SerialException=OSError)
+    with patch.dict(sys.modules, {'serial': serial}), contextlib.redirect_stdout(io.StringIO()), \
+            patch.object(sys, 'argv', ['bose_serial.py', 'loopback', '--live-loopback']):
+        try: bose.main()
+        except SystemExit as failure:
+            assert error and str(failure).startswith(error), failure
+        else: assert error is None
+    assert port.writes == ([] if port.before else [b'BOSE\r']), 'diagnostic retried or wrote before checking input'
+print('Fake loopback success, unexpected input, partial write and bad echo checks passed')

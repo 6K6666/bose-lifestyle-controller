@@ -2,6 +2,7 @@
 import _bootstrap
 from pathlib import Path
 from runpy import run_path
+from tools.public_manifest import public_files
 
 ROOT = Path(__file__).resolve().parents[1]
 m = run_path(str(ROOT / 'custom_components/bose_lifestyle/rooms.py'))
@@ -196,9 +197,9 @@ def test_experimental_only_buttons_show_visible_reason_until_enabled():
 def test_default_room_names_are_generic():
     # The house names are assembled at runtime so this file never contains them.
     forbidden = [' '.join(['Family', 'Room']), ''.join(['Back', 'yard']), ' '.join(['Master', 'Bedroom'])]
-    skipped = {'.git', '__pycache__', 'tests'}
-    scanned = [p for p in sorted(ROOT.rglob('*'))
-               if p.is_file() and not (set(p.relative_to(ROOT).parts) & skipped) and not p.name.startswith('test_')]
+    scanned = [ROOT / rel for rel in public_files(ROOT)
+               if not rel.startswith('tests/') and not Path(rel).name.startswith('test_')]
+    assert {ROOT / 'bose_ir.py', ROOT / 'custom_components/bose_lifestyle/rooms.py'} <= set(scanned)
     assert len(scanned) > 10, scanned
     for path in scanned:
         text = path.read_bytes().decode('utf-8', 'ignore').casefold()

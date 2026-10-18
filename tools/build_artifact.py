@@ -17,7 +17,8 @@ from subst import subst, token_pattern  # noqa: E402
 COMPONENT_ROOT = 'custom_components'
 DOMAIN_RE = re.compile(r'[a-z][a-z0-9_]*')
 ROOT_MODULES = ('bose_commands.py', 'bose_events.py', 'bose_ir.py', 'bose_request.py')
-HA_SUITES = ('tests/test_bose_integration.py', 'tests/test_bose_transport.py', 'tests/test_bose_compat.py')
+HA_SUITES = ('tests/test_bose_integration.py', 'tests/test_bose_transport.py', 'tests/test_bose_compat.py',
+             'tests/test_bose_pairing.py', 'tests/test_bose_pairing_flow.py')
 TEST_SUPPORT = ('tests/_bootstrap.py',)
 TEST_DIRS = ('tests/fixtures',)
 SKIP_PARTS = {'__pycache__'}

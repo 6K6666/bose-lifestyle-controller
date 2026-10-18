@@ -3,6 +3,7 @@ import json
 import tempfile
 from pathlib import Path
 from bose_ir import RemoteManager, IRException, validate_management, strict_json
+from bose_config import resolve_ir_action
 from unittest.mock import patch
 
 
@@ -19,8 +20,8 @@ def run():
             except IRException as e: assert str(e)==error, e
             else: raise AssertionError('accepted invalid operation')
         def press(scan):
-            m.event(1,115,0); m.event(4,4,scan)
-            return m.event(1,115,1)
+            now[0] += .31
+            return m.scan_event(scan)
         sid=begin()
         fail('begin','busy',name='Other',model='ir-remote')
         call('capture',session_id=sid)
@@ -32,7 +33,7 @@ def run():
         call('choose',session_id=sid,choice='keep')
         call('choose',session_id=sid,choice='skip')
         call('capture',session_id=sid)
-        now[0]=31
+        now[0]=m.session['capture_expires']
         assert call('session',session_id=sid)['phase']=='timeout'
         call('choose',session_id=sid,choice='retry')
         assert press(789) is None
@@ -43,11 +44,15 @@ def run():
         assert press(123) is None
         call('update',remote_id=rid,active=True,key='volume-up',enabled=True)
         assert press(123)=='volume-up'
-        m.event(4,4,123); assert m.event(1,115,2) is None
-        m.event(4,4,123); assert m.event(1,115,1) is None
+        assert m.scan_event(123)=='volume-up'
+        now[0] += .3
+        assert m.scan_event(123)=='volume-up'
         assert press(999) is None
-        m.event(4,4,-1); assert m.scan==0xffffffff
-        m.scan=None
+        sid=begin('Unsigned scan')
+        call('capture',session_id=sid)
+        press(-1); press(-1); press(-1)
+        assert call('session',session_id=sid)['candidate']==0xffffffff
+        call('cancel',session_id=sid)
         sid=begin('Mismatch')
         call('capture',session_id=sid); press(100); press(101)
         assert call('session',session_id=sid)['phase']=='inconsistent'
@@ -64,13 +69,13 @@ def run():
         call('capture',session_id=sid); press(123)
         assert call('session',session_id=sid)['phase']=='conflict'
         fail('choose','no_capture',session_id=sid,choice='keep')
-        now[0]=332
+        now[0]=m.session['expires']
         fail('session','session_expired',session_id=sid)
-        assert m.toggle_mute()=='room-a-mute'
+        assert resolve_ir_action('mute', 'a', m.mute_state)=='room-a-mute'
         m.command_succeeded('room-a-mute')
         m.command_succeeded('room-a-volume-up')
         assert m.mute_state is True
-        assert m.toggle_mute()=='room-a-unmute'
+        assert resolve_ir_action('mute', 'a', m.mute_state)=='room-a-unmute'
         m.mute_unknown(); assert m.mute_state is None
         again=RemoteManager(path)
         assert again.bridge_id==m.bridge_id and again.profiles==m.profiles

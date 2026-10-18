@@ -39,8 +39,11 @@ def strict_json(text):
         result = dict(items)
         if len(result) != len(items): raise IRException('invalid_request')
         return result
-    return json.loads(text, object_pairs_hook=pairs,
-                      parse_constant=lambda _: (_ for _ in ()).throw(IRException('invalid_request')))
+    try:
+        return json.loads(text, object_pairs_hook=pairs,
+                          parse_constant=lambda _: (_ for _ in ()).throw(IRException('invalid_request')))
+    except RecursionError as error:
+        raise IRException('invalid_request') from error
 
 
 def identifier(value):
@@ -211,8 +214,6 @@ class RemoteManager:
         self.bridge_id, self.profiles, self.mute_state = uuid.uuid4().hex, {}, None
         self.target_zone = None   # in memory only: the file format never records it
         self.session = None
-        self.scan = None
-        self.held = set()
         self.last_scan = None
         self.last_scan_at = float("-inf")
         if os.path.lexists(self.path):   # a dangling link is an existing state entry, never a first install
@@ -250,9 +251,9 @@ class RemoteManager:
 
     def expire(self):
         if self.session:
-            if self.clock() >= self.session['expires']: self.session = None; self.scan = None
+            if self.clock() >= self.session['expires']: self.session = None
             elif self.session['phase'] == 'waiting' and self.clock() >= self.session['capture_expires']:
-                self.session['phase'] = 'timeout'; self.scan = None
+                self.session['phase'] = 'timeout'
 
     @property
     def learning(self):
@@ -284,14 +285,12 @@ class RemoteManager:
                             'phase': 'ready', 'candidate': None, 'shared': False, 'verified': 0,
                             'mappings': copy.deepcopy(self.profiles[rid]['mappings']) if rid in self.profiles else empty_mappings(),
                             'expires': self.clock() + 300, 'capture_expires': 0}
-            self.scan = None
             return self.session_status(self.session)
         if op in ('capture','session','choose','commit','cancel'):
             session = self._session(data['session_id'])
             if op == 'capture':
                 if session['index'] >= len(session['keys']): raise IRException('not_ready')
                 session.update(phase='waiting', candidate=None, shared=False, verified=0, capture_expires=self.clock()+30)
-                self.scan = None
             elif op == 'choose':
                 choice = data['choice']
                 if session['index'] >= len(session['keys']): raise IRException('not_ready')
@@ -305,7 +304,6 @@ class RemoteManager:
                 session['mappings'][key] = {'code': candidate, 'enabled': False}
                 session['index'] += 1
                 session.update(phase='review' if session['index'] == len(session['keys']) else 'ready', candidate=None, shared=False, verified=0)
-                self.scan = None
             elif op == 'commit':
                 if session['phase'] != 'review': raise IRException('not_ready')
                 profiles = copy.deepcopy(self.profiles)
@@ -313,9 +311,9 @@ class RemoteManager:
                     'name': session['name'], 'model': session['model'],
                     'active': profiles.get(session['remote_id'],{}).get('active',False), 'mappings': session['mappings']}
                 self._save(profiles, self.mute_state)
-                rid = session['remote_id']; self.session = None; self.scan = None
+                rid = session['remote_id']; self.session = None
                 return {'remote_id': rid}
-            elif op == 'cancel': self.session = None; self.scan = None; return {}
+            elif op == 'cancel': self.session = None; return {}
             return self.session_status(session)
         if op == 'resync': self._save(self.profiles, data['muted']); return {}
         if self.session: raise IRException('busy')
@@ -345,19 +343,6 @@ class RemoteManager:
                     session['shared'] = True
         for other, mapping in session['mappings'].items():
             if other != key and mapping['code'] == code: raise IRException('conflict')
-
-    def event(self, event_type, code, value):
-        self.expire()
-        if event_type == 4 and code == 4:
-            self.scan = value & 0xffffffff if type(value) is int and -0x80000000 <= value <= 0xffffffff else None
-            return None
-        if event_type != 1: return None
-        if value == 0: self.held.discard(code); self.scan = None; return None
-        if value != 1 or code in self.held: self.scan = None; return None
-        self.held.add(code)
-        scan, self.scan = self.scan, None
-        if scan is None: return None
-        return self._press(scan)
 
     def scan_event(self, value):
         """Consume decoded MSC_SCAN even when Linux has no assigned key."""
@@ -390,9 +375,6 @@ class RemoteManager:
             for key, mapping in profile['mappings'].items():
                 if mapping['enabled'] and mapping['code'] == scan: return key
         return None
-
-    def toggle_mute(self, zone='a'):
-        return f'room-{zone}-unmute' if self.mute_state is True else f'room-{zone}-mute'
 
     def command_succeeded(self, action, zone='a'):
         if action in (f'room-{zone}-mute', f'room-{zone}-unmute'):
