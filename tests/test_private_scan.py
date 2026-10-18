@@ -5,7 +5,6 @@ Run the scan of a tree with external literals (literal values never live in this
     python3 -B tests/test_private_scan.py --patterns PATH [--root DIR]
 """
 import _bootstrap
-import ast
 import json
 import re
 import sys
@@ -18,7 +17,7 @@ sys.path.insert(0, str(ROOT / 'tools'))
 from subst import subst  # noqa: E402
 
 SHAPES_FILE = ROOT / 'tools' / 'neutral_shapes.txt'
-SKIP_DIRS = {'.git', '__pycache__'}
+SKIP_DIRS = {'.git', '__pycache__', '.venv', 'venv'}
 SKIP_FILES = {'tools/neutral_shapes.txt'}
 
 
@@ -35,7 +34,7 @@ def scan(root, shapes, literals):
         if not path.is_file():
             continue
         rel = path.relative_to(root).as_posix()
-        if SKIP_DIRS & set(path.relative_to(root).parts) or rel in SKIP_FILES:
+        if SKIP_DIRS & set(path.relative_to(root).parts) or rel.startswith('build/') or rel in SKIP_FILES:
             continue
         for lit in literals:
             if lit and lit in rel:
@@ -67,12 +66,24 @@ class ScanTests(unittest.TestCase):
             found = scan(d, self.shapes, [])
         self.assertEqual(len(found), 3, found)
 
+    def test_generated_outputs_are_ignored_but_source_and_config_are_scanned(self):
+        literal = 'synthetic-' + 'private-value'
+        with tempfile.TemporaryDirectory() as d:
+            for name in ('.venv/dependency.txt', 'venv/dependency.txt', 'build/run.log',
+                         'source.txt', 'src/build/source.txt', 'config.json'):
+                path = Path(d, name)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(literal, encoding='utf-8')
+            self.assertEqual(scan(d, [], [literal]),
+                             ['config.json:1: literal', 'source.txt:1: literal',
+                              'src/build/source.txt:1: literal'])
+
     def test_clean_tree_passes(self):
         self.assertEqual(scan(ROOT, self.shapes, []), [])
 
     def test_every_json_file_parses(self):
         for p in ROOT.rglob('*.json'):
-            if SKIP_DIRS & set(p.relative_to(ROOT).parts):
+            if SKIP_DIRS & set(p.relative_to(ROOT).parts) or p.relative_to(ROOT).parts[0] == 'build':
                 continue
             json.loads(p.read_text(encoding='utf-8'))
 

@@ -42,7 +42,8 @@ async def run():
         loader.async_setup(hass)
         hass.config_entries=ConfigEntries(hass,{})
         await hass.config_entries.async_initialize()
-        manager=RemoteManager(Path(tmp)/'ir.json'); manager.persist()
+        manager_clock=[0.0]
+        manager=RemoteManager(Path(tmp)/'ir.json',lambda:manager_clock[0]); manager.persist()
         serial=[]
         fault=[None]
         fault=[None]; fault_clears=[]; d_refuse=[False]; outcome_data=[None]; events_data=[{'t':1.5,'kind':'tx','action':'volume-down','detail':'4d 4d'}]; bridge_calls=[]
@@ -304,7 +305,8 @@ async def run():
             assert [(c.url_path,Path(c.path).name,c.cache_headers) for c in served]==[('/bose_lifestyle_static','frontend',False)]
             assert urls==[f'/bose_lifestyle_static/bose-control-card.js?v={version}'] and (Path(served[0].path)/'bose-control-card.js').exists()
             def press(code):
-                manager.event(1,115,0); manager.event(4,4,code); assert manager.event(1,115,1) is None
+                manager_clock[0]+=.31  # distinct repeated scans pass the bridge's 300 ms repeat filter
+                manager.scan_event(code)
             assert registry.async_get_entity_id('binary_sensor','bose_lifestyle',f'{manager.bridge_id}_receiver'),'receiver sensor unique id changed'
             flows=hass.config_entries.subentries
             flow=await flows.async_init((entry.entry_id,'remotes'),context={'source':'user'})
@@ -322,7 +324,7 @@ async def run():
             assert other['errors']['base']=='busy'
             flows.async_abort(other['flow_id'])
             press(123); assert manager.session['verified']==1
-            manager.event(4,4,123); manager.event(1,115,2)
+            manager.scan_event(123); manager.scan_event(123)
             assert manager.session['verified']==1
             press(123); press(123)
             await asyncio.sleep(.5)

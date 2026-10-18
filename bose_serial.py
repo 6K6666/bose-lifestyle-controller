@@ -45,14 +45,11 @@ def main():
             if port.write(command) != len(command):
                 raise SystemExit('Partial write; stopped without retry')
             port.flush()
-            received = port.read(len(command) if args.action == 'loopback' else 512)
+            received = port.read(len(command))
             print(f'RX {received.hex(" ")} {received!r}')
-            if args.action == 'loopback':
-                if received != command:
-                    raise SystemExit('Loopback failed')
-                print('Loopback passed')
-            else:
-                print('Transmitted one room A volume-down; control requires P1 confirmation. No retry.')
+            if received != command:
+                raise SystemExit('Loopback failed')
+            print('Loopback passed')
     except (serial.SerialException, OSError) as error:
         raise SystemExit(f'Serial error: {error}; no retry') from error
 

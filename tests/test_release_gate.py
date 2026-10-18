@@ -260,6 +260,24 @@ class GateTests(GateCase):
         _code, results, _text = self.gate(repo, '--patterns', str(self.patterns_file()))
         self.assertEqual(results['results-suites'][0], 'FAIL', results)
 
+    def test_each_planned_occurrence_requires_a_passed_run(self):
+        # Artifact tests run in both stdlib and HA environments. One pass must
+        # not satisfy two planned executions of the same filename.
+        runner = base_files()['run_tests.sh'].replace(
+            'VENV_SUITES="test_fake_venv.py"',
+            'VENV_SUITES="test_fake_venv.py test_docs.py"')
+        repo = self.release_tree(files={'run_tests.sh': runner})
+        path = repo / 'build' / 'test-results.json'
+        record = json.loads(path.read_text(encoding='utf-8'))
+        record['planned'] = 4
+        path.write_text(json.dumps(record), encoding='utf-8')
+        gate = release_gate.Gate(root=repo, scratch=self.tmp())
+        self.assertFalse(release_gate.c_results_suites(gate)[0],
+                         'one passed run satisfied two planned executions')
+        record['suites'].append({'name': 'test_docs.py', 'exit': 0})
+        path.write_text(json.dumps(record), encoding='utf-8')
+        self.assertTrue(release_gate.c_results_suites(gate)[0])
+
     def test_record_from_different_run_tests_sh_hash_fails(self):
         repo = self.release_tree(record={'runner_sha': '0' * 64})
         _code, results, _text = self.gate(repo, '--patterns', str(self.patterns_file()))
@@ -381,6 +399,9 @@ class RealRunnerAgreement(unittest.TestCase):
 
     def test_expected_suites_include_both_maintainer_globs_from_the_real_runner(self):
         paths = subprocess.run(['git', 'ls-files'], cwd=ROOT, capture_output=True, text=True, check=True).stdout.split()
+        # Public releases omit maintainer files; exercise both globs even there.
+        paths += ['maintainer/verify/test_example.py', 'maintainer/verify/check_example.py',
+                  'maintainer/verify/nested/test_ignored.py']
         runner = (ROOT / 'run_tests.sh').read_text(encoding='utf-8')
 
         class Head:
@@ -388,6 +409,7 @@ class RealRunnerAgreement(unittest.TestCase):
             def head_paths(self): return paths
 
         names = release_gate.expected_suites(Head())
+        self.assertNotIn('maintainer/verify/nested/test_ignored.py', names)
         import fnmatch
         for pattern in ('maintainer/*/test_*.py', 'maintainer/*/check_*.py'):   # both globs the runner uses
             for path in paths:

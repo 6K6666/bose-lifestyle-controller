@@ -229,12 +229,13 @@ with tempfile.TemporaryDirectory() as tmp:
  config=tmp+'/ir.json';path=tmp+'/accepted.sock';state=tmp+'/state.json'
  Path(config).write_text(json.dumps({'ir_device':'/dev/input/by-id/fake-receiver','ir_name':'exact receiver','ir_keys':[]}))
  write_config(Path(tmp, 'config.json'))
- manager=RemoteManager(state)
+ clock=[0.0]
+ manager=RemoteManager(state,lambda:clock[0])
  for name in ('Remote One','Remote Two'):
   sid=manager.manage({'op':'begin','name':name,'model':'ir-remote'})['session_id']
   manager.manage({'op':'capture','session_id':sid})
   for _ in range(3):
-   manager.event(1,115,0);manager.event(4,4,-1);manager.event(1,115,1)
+   clock[0]+=.31;manager.scan_event(-1)
   manager.manage({'op':'choose','session_id':sid,'choice':'keep'})
   manager.manage({'op':'choose','session_id':sid,'choice':'skip'})
   manager.manage({'op':'choose','session_id':sid,'choice':'skip'})
