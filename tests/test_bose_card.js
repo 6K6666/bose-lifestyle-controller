@@ -1122,7 +1122,7 @@ const { irLine, REASON_TEXT } = globalThis.BoseCard;
   assert.ok(!/background:(?!\s*none)/.test(ruleOf('.seg.src')), 'the container has no shared background');
   assert.match(ruleOf('.seg.src'), /gap:\s*8px/);
   const tile = ruleOf('.seg.src .ctl');
-  assert.match(tile, /background:/); assert.match(tile, /border:\s*1px solid/); assert.match(tile, /border-radius:\s*12px/); assert.match(tile, /min-height:\s*56px/);
+  assert.match(tile, /background:/); assert.match(tile, /border:\s*1px solid/); assert.match(tile, /border-radius:\s*var\(--bc-radius-control\)/); assert.match(tile, /min-height:\s*56px/);
   let html = room({ tv: { entity: 'button.a_tv', disabled: false }, music: { entity: 'button.a_music', disabled: false }, 'source-am': { entity: 'button.a_am', disabled: false } });
   assert.ok(html.includes('<div class="seg src">'));
   assert.equal(TILES(html).length, 3, 'one tile per source');

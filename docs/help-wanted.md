@@ -10,14 +10,17 @@ Confirm that Zone D works with your original Bose controls, then report what phy
 - Input selection.
 - Volume up & down.
 - Mute & unmute.
+- Whether the card's Volume & Selected input are blank or wrong for Zone D (they aren't read there yet).
 
 If you use a learned infrared remote, feedback on its Zone D volume & mute controls is welcome too. Note any difference between what Home Assistant reports & what the system does.
 
-## Live state research and equipment donations
+## Live state: power and mute, and equipment donations
 
-**Live state is currently unsupported.** We can't read the current power, source, volume, or mute state for each room, including changes made with the P1 remote. Command acknowledgments & volume estimates do not establish the actual state.
+**Partly solved.** Since v1.1.0 the bridge reads each room's reported **volume** and **selected input** for Rooms A, B & C over the existing serial connection, & the card shows them, including changes made with the P1 remote. Room D isn't read yet.
 
-We need **donor M1 interfaces, P1 remotes, Lifestyle systems and parts, and RF test equipment or lab access** to investigate this. Several RF research approaches we evaluated required equipment beyond the project's current budget. Affordable approaches, equipment loans, & reproducible research are welcome.
+**Still unsolved: power and mute.** We haven't found a way to read whether each room is on or muted, including changes made with the P1 remote. Command acknowledgments don't establish the actual state. If you know a read-only query, or can capture one, that is the most useful contribution.
+
+We still accept **donor M1 interfaces, P1 remotes, Lifestyle systems and parts, and RF test equipment or lab access** to investigate power and mute. Several RF research approaches we evaluated required equipment beyond the project's current budget. Affordable approaches, equipment loans, & reproducible research are welcome.
 
 See [Live state research](live-state-research.md) for what we have investigated, the remaining questions, useful equipment, & how to help. Donors & contributors who provide successful code or research for this capability will receive prominent credit in the repository, with their permission.
 

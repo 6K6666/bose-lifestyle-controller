@@ -44,14 +44,24 @@ with tempfile.TemporaryDirectory() as tmp:
     write_config(Path(tmp, 'config.json'))
     code = r'''
 import sys,types
+sys.path.insert(0,'tests')
+from helpers import QUERY_REPLIES
 class Port:
+ timeout=None   # pyserial has this attribute; the telemetry poll saves and restores it
+ pending=b''
  def __init__(self,**kwargs): pass
  def open(self): pass
  def close(self): pass
  @property
  def in_waiting(self): return 0
- def read(self,n): return b''
+ def read(self,n):
+  out,self.pending=self.pending[:n],self.pending[n:]   # only a telemetry status query ever gets a reply
+  return out
  def write(self,data):
+  if data in QUERY_REPLIES:
+   self.pending=QUERY_REPLIES[data]
+   with open(sys.argv[2],'a') as f: f.write('QX '+data.hex()+'\n')
+   return len(data)
   with open(sys.argv[2],'a') as f: f.write(data.hex()+'\n')
   return len(data)
  def flush(self): pass
@@ -72,7 +82,8 @@ serve(sys.argv[1],False,ir_state=sys.argv[2]+'.state',serial_port='/dev/serial/b
         assert set(snapshot['rooms']) == {'a', 'b', 'c', 'd'}
         assert all(field == {'value': None, 'observed_at': None, 'age': None, 'supported': False}
                    for field in snapshot['rooms']['d'].values())
-        assert not Path(log).exists()
+        # A status read may send the two telemetry queries (QX); no command frame is ever written here.
+        assert not Path(log).exists() or all(line.startswith('QX ') for line in Path(log).read_text().splitlines())
     finally:
         process.terminate()
         stdout, stderr = process.communicate(timeout=4)
@@ -88,12 +99,18 @@ FAKE = r'''
 import sys,types
 mode,path,log,state=sys.argv[1:5]
 from bose_commands import COMMANDS,RESPONSES,expected_reply
+sys.path.insert(0,'tests')
+from helpers import QUERY_REPLIES
 class Port:
+ timeout=None   # pyserial has this attribute; the telemetry poll saves and restores it
+ query=None     # the rest of a telemetry query reply while a query is the last write
  def __init__(self,**kwargs): self.sent=None
  def open(self): pass
  def close(self): pass
  in_waiting=0
  def read(self,n):
+  if n and self.query is not None:
+   out,self.query=self.query[:n],self.query[n:]; return out
   if not n or self.sent is None: return b''
   sent,self.sent=self.sent,None
   name=next(k for k in COMMANDS if COMMANDS[k]==sent)
@@ -104,6 +121,10 @@ class Port:
    return frame
   return RESPONSES[name]
  def write(self,data):
+  if data in QUERY_REPLIES:   # a telemetry status query: answered, logged apart from commands
+   with open(log,'a') as f: f.write('QX '+data.hex()+'\n')
+   self.query=QUERY_REPLIES[data]; return len(data)
+  self.query=None
   with open(log,'a') as f: f.write('TX '+data.hex()+'\n')
   self.sent=data
   return len(data)
@@ -154,7 +175,7 @@ ON = {'op': 'set_room_live', 'room': 'd', 'live': True}
 with tempfile.TemporaryDirectory() as tmp:
     with d_bridge('ok', tmp, BASELINE_CONFIG) as (path, log, process):
         snap = bridge_status(path)
-        assert snap['schema'] == 4 and room_d_live(snap) is False and snap['actions']['room-d-mute']['allowed'] is False
+        assert snap['schema'] == 5 and room_d_live(snap) is False and snap['actions']['room-d-mute']['allowed'] is False
         assert request(path, b'room-d-mute\n') == 'rejected: not-allowed'
         assert tx_count(log) == 0
         assert manage(path, ON) == {'ok': False, 'error': 'invalid_request'}   # removed op: no file is touched
@@ -170,17 +191,17 @@ with tempfile.TemporaryDirectory() as tmp:
         assert tx_count(log) == 0, 'startup transmitted'
         assert request(path, b'room-d-mute\n') == LIVE_MESSAGES['room-d-mute']
         assert request(path, b'room-d-unmute\n') == 'rate-limited'          # rapid taps are dropped, not rejected
-        assert log.read_text().splitlines() == ['TX ' + COMMANDS['room-d-mute'].hex()]
+        assert [line for line in log.read_text().splitlines() if line.startswith('TX ')] == ['TX ' + COMMANDS['room-d-mute'].hex()]
         time.sleep(1.05)
         for name in ('room-d-source-fm', 'room-d-source-cd', 'room-d-source-tape', 'room-d-source-video-2'):
             assert request(path, (name + '\n').encode()) == 'rejected: not-allowed', name   # sources not connected
         assert tx_count(log) == 1
-        # Only status schema 4 is accepted: older or unknown shapes are rejected by the strict validator.
+        # Only status schemas 4 and 5 are accepted: older or unknown shapes are rejected by the strict validator.
         from bose_request import validate_status
         snap_text = request(path, b'status\n')
         schema4 = json.loads(snap_text)
-        assert validate_status(snap_text)['schema'] == 4
-        for bad_shape in ({**schema4, 'schema': 3}, {**schema4, 'schema': 2}, {**schema4, 'schema': 5}):
+        assert validate_status(snap_text)['schema'] == 5
+        for bad_shape in ({**schema4, 'schema': 3}, {**schema4, 'schema': 2}, {**schema4, 'schema': 6}):
             try: validate_status(json.dumps(bad_shape))
             except OSError: pass
             else: raise AssertionError('non-schema-4 status accepted')

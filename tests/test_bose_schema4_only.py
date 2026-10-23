@@ -1,4 +1,4 @@
-"""One supported status schema (4): schema 2/3, set_room_live, rooms.json and legacy entity code are absent."""
+"""Supported status schemas (4, and 5 with live room telemetry): schema 2/3, set_room_live, rooms.json and legacy entity code are absent."""
 import _bootstrap
 import json
 import re
@@ -29,10 +29,11 @@ def repo_files(patterns):
 
 
 def test_status_schema_3_rejected_cleanly():
-    assert request_validate_status(reply(4))
-    assert ir_validate_status(reply(4))['schema'] == 4
-    assert PROTOCOL['validate_status'](reply(4))['schema'] == 4
-    for schema in (2, 3, 5):
+    for schema in (4, 5):
+        assert request_validate_status(reply(schema))
+        assert ir_validate_status(reply(schema))['schema'] == schema
+        assert PROTOCOL['validate_status'](reply(schema))['schema'] == schema
+    for schema in (2, 3, 6):
         text = reply(schema)
         for check, error in ((request_validate_status, OSError), (ir_validate_status, ValueError),
                              (PROTOCOL['validate_status'], ValueError)):

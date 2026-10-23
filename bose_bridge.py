@@ -29,6 +29,15 @@ IR_STATE = '/var/lib/bose-control/ir-state.json'
 MAX_RESPONSE_BYTES = 128
 SERIAL_IO_ERRORS = (OSError, termios.error)   # termios.error (tcdrain, line settings) is not an OSError subclass
 NOT_ALLOWED = 'rejected: not-allowed'
+QUERY_PREFIX = b'\r\r\r\r>.'
+QUERY_REPLY_SIZE = 19
+QUERY_FRAME = re.compile(rb'\r\r\r\r>\.[0-9A-Fa-f]{12}\r')
+ROOM_SOURCE_BY_CODE = {'00': 'am', '01': 'fm', '02': 'cd', '03': 'aux',
+                       '04': 'video-1', '05': 'video-2', '06': 'tape'}
+VOLUME_QUERY = b'MM 2A,0\r'
+SOURCE_QUERY = b'MM 2B,00\r'
+VOLUME_QUIET_SECONDS = .45
+STATUS_POLL_INTERVAL = 5.0
 
 SERIAL_PREFIX = '/dev/serial/by-id/'
 SERIAL_NAME = re.compile(r'[A-Za-z0-9._+:-]+')
@@ -83,6 +92,27 @@ class SerialFault(Exception):
 
 def validate_response(data, command=VOLUME_DOWN):
     return any(COMMANDS[name]==command and reply==data for name,reply in RESPONSES.items())
+
+
+def _query_payload(reply, response_id):
+    if not isinstance(reply, bytes) or len(reply) != QUERY_REPLY_SIZE or QUERY_FRAME.fullmatch(reply) is None:
+        raise ValueError('unexpected-response')
+    payload = reply[len(QUERY_PREFIX):-1].upper()
+    if payload[:4] != response_id:
+        raise ValueError('unexpected-response')
+    return payload[4:]
+
+
+def decode_room_volume(reply):
+    """Decode the A-C volume bytes from one exact 2A response frame."""
+    payload = _query_payload(reply, b'0A00')
+    return tuple(int(payload[offset:offset + 2], 16) for offset in (0, 2, 4))
+
+
+def decode_room_sources(reply):
+    """Decode known A-C input selectors from one exact 2B frame; keep its final byte opaque."""
+    payload = _query_payload(reply, b'0B00')
+    return tuple(ROOM_SOURCE_BY_CODE.get(payload[offset:offset + 2].decode('ascii')) for offset in (0, 2, 4))
 
 
 TICK_GAP = .25   # between the ticks of one volume press: the same spacing the bridge already allows between volume presses
@@ -278,6 +308,9 @@ def _serve(path=SOCKET, dry_run=False, ir_config=None, ir_state=IR_STATE, serial
     rooms = {room: {field: {'value': None, 'observed_at': None, 'age': None, 'supported': False}
                    for field in ('power', 'source', 'volume', 'mute')}
              for room in ('a', 'b', 'c', 'd')}
+    dirty_telemetry = set()
+    last_volume_action_at = -math.inf
+    last_full_poll_at = -math.inf
 
     def outcome(action, value):
         health['last_outcome'] = {'action': action, 'outcome': value, 'observed_at': time.time()}
@@ -315,7 +348,33 @@ def _serve(path=SOCKET, dry_run=False, ir_config=None, ir_state=IR_STATE, serial
         return {'ok': True, 'result': {}}
 
     def snapshot():
-        # Schema 4: config and actions come from the one store; no feedback capability is commissioned, so rooms stay unknown.
+        nonlocal last_full_poll_at
+        # Query only through this process's exclusive serial handle; no client opens or shares the adapter.
+        # An install that is not set up yet (every room turned off, the same rule as Home Assistant's Finish setup)
+        # transmits nothing, not even a status query.
+        can_query = (not dry_run and port is not None and health['mode'] == 'live' and store.state == 'ok'
+                     and any(zone['enabled'] for zone in store.config['zones'].values())
+                     and health['serial_open'] and not health['fault'])
+        now_mono = time.monotonic()
+        quiet = now_mono - last_volume_action_at >= VOLUME_QUIET_SECONDS
+        if can_query and quiet:
+            if dirty_telemetry:
+                for field in ('volume', 'source'):
+                    if field in dirty_telemetry:
+                        if not poll_telemetry(field):
+                            break
+                        dirty_telemetry.discard(field)
+            elif now_mono - last_full_poll_at >= STATUS_POLL_INTERVAL:
+                last_full_poll_at = now_mono
+                for field in ('volume', 'source'):
+                    if not poll_telemetry(field):
+                        break
+
+        observed_now = time.time()
+        for room in rooms.values():
+            for sample in room.values():
+                if sample['supported']:
+                    sample['age'] = max(0.0, observed_now - sample['observed_at'])
         health['config'] = store.state
         config = None if store.state != 'ok' else {key: copy.deepcopy(store.config[key])
                                                    for key in ('zones', 'sources', 'unverified', 'ir')}
@@ -326,7 +385,7 @@ def _serve(path=SOCKET, dry_run=False, ir_config=None, ir_state=IR_STATE, serial
             name: {'zone': entry.zone, 'function': entry.function, 'source': entry.source,
                    'verified': entry.verified, 'alias': entry.alias, 'allowed': allowed(name) and not health['fault']}
             for name, entry in CATALOG.items()}
-        return json.dumps({'schema': 4, 'bridge_id': manager.bridge_id, 'generated_at': time.time(), 'bridge': health,
+        return json.dumps({'schema': 5, 'bridge_id': manager.bridge_id, 'generated_at': observed_now, 'bridge': health,
                            'config': config, 'actions': actions, 'ir': manager.status(),
                            'rooms': rooms}, separators=(',', ':'), allow_nan=False)
 
@@ -355,12 +414,86 @@ def _serve(path=SOCKET, dry_run=False, ir_config=None, ir_state=IR_STATE, serial
             close_port()
             health['recovery'] = 'waiting-for-exact-adapter'
 
+    tuned = False   # the port's timeouts were shortened for a multi-step press and must be restored
+
+    def poll_telemetry(field):
+        nonlocal next_port_check, tuned
+        command = VOLUME_QUERY if field == 'volume' else SOURCE_QUERY
+        action = 'status-query-' + field
+        attempted = False
+        logged = False
+        pre_input = b''
+        received = b''
+        def log_exchange():
+            nonlocal logged
+            if logged:
+                return
+            logged = True
+            if attempted:
+                log.add('tx', action, command.hex(' '))
+            log.add('rx', action, received.hex(' '))
+        try:
+            if port is None or health['fault'] or not health['serial_open']:
+                return False
+            pre_input = port.read(port.in_waiting)
+            if pre_input:
+                print('Unexpected pre-input RX ' + pre_input.hex(' '), flush=True)
+                raise SerialFault('unexpected-pre-input', attempted=False)
+            if not running:
+                return False
+            if tuned:
+                port.write_timeout = 2
+                port.timeout = READ_TIMEOUT
+                tuned = False
+            attempted = True
+            if port.write(command) != len(command):
+                raise SerialFault('partial-write')
+            drain_bounded(port)
+            received = port.read(QUERY_REPLY_SIZE)
+            if len(received) == QUERY_REPLY_SIZE:
+                prior_timeout = port.timeout
+                try:
+                    port.timeout = .05
+                    trailing = port.read(1)
+                    if trailing:
+                        trailing += port.read(port.in_waiting)
+                    received += trailing
+                finally:
+                    port.timeout = prior_timeout
+            print('TX ' + command.hex(' ') + ' ' + action, flush=True)
+            print('RX ' + received.hex(' ') + ' ' + repr(received), flush=True)
+
+            values = decode_room_volume(received) if field == 'volume' else decode_room_sources(received)
+            log_exchange()
+            observed_at = time.time()
+            for room, value in zip(('a', 'b', 'c'), values):
+                supported = value is not None
+                rooms[room][field] = {'value': value if supported else None,
+                                      'observed_at': observed_at if supported else None,
+                                      'age': 0.0 if supported else None,
+                                      'supported': supported}
+            return True
+        except (*SERIAL_IO_ERRORS, SerialFault, ValueError) as error:
+            log_exchange()
+            reason = str(error) if isinstance(error, SerialFault) else (
+                'unexpected-response' if isinstance(error, ValueError) else 'serial-io-during-transmission')
+            close_port()
+            if isinstance(error, SERIAL_IO_ERRORS) and not attempted:
+                health['recovery'] = 'transport-lost-before-write'
+                next_port_check = time.monotonic() + 5
+            else:
+                health['fault'] = reason
+                health['recovery'] = 'operator-investigation-required'
+                detail = f'{reason}; rx={received.hex(" ")}'
+                if pre_input:
+                    detail += f'; pre={pre_input.hex(" ")}'
+                log.add('fault', action, detail)
+            return False
+
     def stop(*_):
         nonlocal running
         running = False
     for sig in (signal.SIGTERM, signal.SIGINT): signal.signal(sig, stop)
-
-    tuned = False   # the port's timeouts were shortened for a multi-step press and must be restored
 
     def writer(action, data):
         nonlocal next_port_check, tuned
@@ -546,7 +679,18 @@ def _serve(path=SOCKET, dry_run=False, ir_config=None, ir_state=IR_STATE, serial
                                 outcome(name, 'rejected')             # denied: nothing written, no budget
                                 reply = NOT_ALLOWED
                             elif bridge.submit(name):
+                                previous_outcome = health['last_outcome']
                                 reply = handle(name)
+                                last = health['last_outcome']
+                                entry = CATALOG.get(name)
+                                if (entry and last is not previous_outcome and last['action'] == name
+                                        and last['outcome'] == 'transmitted-with-matching-response'):
+                                    function = entry.function
+                                    if function in ('volume-up', 'volume-down'):
+                                        dirty_telemetry.add('volume')
+                                        last_volume_action_at = time.monotonic()
+                                    elif function == 'source':
+                                        dirty_telemetry.add('source')
                                 zone = target_zone()
                                 mute_names = {f'room-{zone}-mute', f'room-{zone}-unmute'} if zone else set()
                                 if reply == LIVE_MESSAGES.get(name) and name in mute_names:

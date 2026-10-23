@@ -38,7 +38,7 @@ If not: if the service does not start, run `journalctl -u bose-bridge.service -n
 
 ## Update Home Assistant
 
-Replace the `custom_components/bose_lifestyle` folder in the Home Assistant configuration folder with the new release, then restart Home Assistant. Keep the `.ssh` files, so pairing continues to work.
+If you installed with HACS, update from HACS (it lists new releases), then restart Home Assistant. Otherwise, replace the `custom_components/bose_lifestyle` folder in the Home Assistant configuration folder with the new release, then restart Home Assistant. Keep the `.ssh` files, so pairing continues to work.
 
 ## Back up
 

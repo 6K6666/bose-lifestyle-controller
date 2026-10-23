@@ -56,7 +56,9 @@ class Control(BoseEntity, ButtonEntity):
         if bridge.get('config') == 'config-uncertain': raise BridgeError('config_uncertain')
         if not self.available: raise BridgeError('bridge_unavailable')
         try: await self.coordinator.client.call(self.action)
-        finally: await self.coordinator.async_request_refresh()
+        finally:
+            if not self.action.endswith(('volume-up', 'volume-down')):
+                await self.coordinator.async_request_refresh()
 
 class FaultClear(BoseEntity, ButtonEntity):
     _attr_icon = 'mdi:alert-remove'

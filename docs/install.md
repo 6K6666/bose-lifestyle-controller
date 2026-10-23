@@ -21,11 +21,29 @@ Replace values written in capitals, such as `PLACEHOLDER`, with your own. Comman
 
 ### Step A1: Install the integration in Home Assistant
 
-Where: the Home Assistant configuration folder.
+Where: Home Assistant. Choose HACS (recommended) or a manual copy.
 
-Expected: copy the `custom_components/bose_lifestyle` folder from the project into the Home Assistant configuration folder. Then Settings, Devices and services, Add integration, and searching for "Bose Lifestyle Assistant" finds the integration.
+This project isn't in the default HACS catalog yet, so you add it to HACS as a custom repository first. It is an integration, not a Home Assistant add-on, so don't look for it in the add-on store. The bridge program runs on the bridge computer (step A3).
 
-If not: check that the folder is at `custom_components/bose_lifestyle` inside the configuration folder, then restart Home Assistant. Restart Home Assistant itself; never restart or power-cycle the Bose unit.
+**With HACS (recommended)**
+
+1. Install [HACS](https://hacs.xyz/docs/use/download/download/) if you haven't. It's a separate community integration, and its setup needs a free GitHub account.
+2. In Home Assistant, open HACS. Select the three-dot menu at the top right, then Custom repositories.
+3. In Repository, paste `https://github.com/6K6666/bose-lifestyle-controller`. In Type, choose Integration. Select Add, then close the dialog.
+4. Search HACS for "Bose Lifestyle Assistant", open it, and select Download. Accept the latest release.
+5. Restart Home Assistant itself; never restart or power-cycle the Bose unit.
+
+A shortcut for steps 2 and 3: [open the repository in your Home Assistant](https://my.home-assistant.io/redirect/hacs_repository/?owner=6K6666&repository=bose-lifestyle-controller&category=integration). It asks HACS to add it for you.
+
+HACS notifies you of new releases. Update from HACS, then update the bridge computer to the same release (see [Update, back up and recover](update-backup-recover.md)).
+
+**Manually**
+
+Copy the `custom_components/bose_lifestyle` folder from the project into the Home Assistant configuration folder, then restart Home Assistant.
+
+Expected: Settings, Devices and services, Add integration, and searching for "Bose Lifestyle Assistant" finds the integration.
+
+If not: with HACS, check that the repository was added as type Integration & that you restarted Home Assistant after the download. For a manual copy, check that the folder is at `custom_components/bose_lifestyle` inside the configuration folder, then restart Home Assistant. Restart Home Assistant itself; never restart or power-cycle the Bose unit.
 
 ### Step A2: Start pairing and copy the key command
 

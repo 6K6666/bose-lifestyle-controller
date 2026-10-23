@@ -294,15 +294,27 @@ import sys,types,os,time
 real_monotonic=time.monotonic
 time.monotonic=lambda:real_monotonic()*100
 counter=sys.argv[3]
+sys.path.insert(0,'tests')
+from helpers import QUERY_REPLIES
 class Port:
+ timeout=None   # pyserial has this attribute; the telemetry poll saves and restores it
+ pending=None   # the rest of a query reply while a query is the last write; None after a command
  def __init__(self,**kwargs):pass
  def open(self):
   with open(counter,'a') as f:f.write('open\n');f.flush()
  def close(self):pass
  @property
  def in_waiting(self):return 0
- def read(self,n):return b'\xff'*n
+ def read(self,n):
+  if self.pending is not None:   # a telemetry query gets its real reply; every command gets the wrong one
+   out,self.pending=self.pending[:n],self.pending[n:];return out
+  return b'\xff'*n
  def write(self,data):
+  if data in QUERY_REPLIES:
+   self.pending=QUERY_REPLIES[data]
+   with open(counter,'a') as f:f.write('query '+data.hex()+'\n');f.flush()
+   return len(data)
+  self.pending=None
   with open(counter,'a') as f:f.write('write '+data.hex()+'\n');f.flush()
   return len(data)
  def flush(self):pass

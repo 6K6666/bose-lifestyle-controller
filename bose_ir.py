@@ -124,7 +124,7 @@ STATUS_FUNCTIONS = ('power-on', 'power-off', 'volume-up', 'volume-down', 'mute',
 
 
 def validate_status(reply, degrade_unknown=False, action_ok=None):
-    """Shared bridge status check for the bridge host forced command and the HA copy. Accepts schema 4 only.
+    """Shared bridge status check for the bridge host forced command and the HA copy. Accepts schemas 4 and 5.
 
     action_ok: predicate for last_outcome/last_transmission action names; None accepts any string.
     degrade_unknown: unknown fault, recovery and config values become 'unknown' instead of raising.
@@ -151,7 +151,8 @@ def _check_status(reply, degrade_unknown, action_ok):
     def exact_bools(mapping, keys):
         require(isinstance(mapping, dict) and set(mapping) == set(keys) and all(type(mapping[k]) is bool for k in keys))
     data = strict_json(reply)
-    require(isinstance(data, dict) and type(data.get('schema')) is int and data['schema'] == 4)
+    require(isinstance(data, dict) and type(data.get('schema')) is int and data['schema'] in (4, 5))
+    schema = data['schema']
     require(set(data) == TOP4 and identifier(data['bridge_id']) and epoch(data['generated_at']))
     health = data['bridge']
     require(isinstance(health, dict) and set(health) == BRIDGE4)
@@ -200,11 +201,21 @@ def _check_status(reply, degrade_unknown, action_ok):
         if key == 'last_transmission':
             require(record['outcome'] in ('uncertain', 'transmitted-with-matching-response', 'refused-by-m1'))
     require(isinstance(data['rooms'], dict) and set(data['rooms']) == {'a', 'b', 'c', 'd'})
-    for room in data['rooms'].values():
+    for room_id, room in data['rooms'].items():
         require(isinstance(room, dict) and set(room) == {'power', 'source', 'volume', 'mute'})
-        for field in room.values():
-            require(isinstance(field, dict) and set(field) == {'value', 'observed_at', 'age', 'supported'} and field['supported'] is False
-                    and all(field[k] is None for k in ('value', 'observed_at', 'age')))
+        for field_name, field in room.items():
+            require(isinstance(field, dict) and set(field) == {'value', 'observed_at', 'age', 'supported'}
+                    and type(field['supported']) is bool)
+            if schema == 4 or room_id == 'd' or field_name in ('power', 'mute') or not field['supported']:
+                require(field['supported'] is False
+                        and all(field[k] is None for k in ('value', 'observed_at', 'age')))
+                continue
+            if field_name == 'volume':
+                require(type(field['value']) is int and 0 <= field['value'] <= 255)
+            else:
+                require(field_name == 'source' and isinstance(field['value'], str) and field['value'] in SOURCES)
+            require(epoch(field['observed_at']) and field['observed_at'] <= data['generated_at'])
+            require(type(field['age']) in (int, float) and math.isfinite(field['age']) and field['age'] >= 0)
     return data
 
 

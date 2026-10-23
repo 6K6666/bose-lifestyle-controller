@@ -1,8 +1,10 @@
 # Live state research: equipment and contributors wanted
 
-**Live state is currently unsupported.** The project sends commands but can't read each room's current power, source, volume, or mute state. This includes changes made with the original P1 remote. A successful serial acknowledgment means the command was acknowledged; it doesn't prove the resulting room state. Counting volume commands can't reliably establish absolute volume.
+**Volume and selected input are now read; power and mute are not.** Since v1.1.0 the bridge asks the M1 for each room's reported volume (`MM 2A,0`) and selected input (`MM 2B,00`) for Rooms A, B & C, only when a status read asks. This reflects changes made with the original P1 remote. Selected input is the unit's selector, not proof that audio is playing. Room D isn't read.
 
-To investigate live state, we need donor **M1 interfaces, P1 remotes, Lifestyle equipment and parts**, along with **RF test equipment, equipment loans, or lab access**. Several RF approaches evaluated so far required equipment beyond the project's current budget. Lower-cost methods & existing captures or research could help.
+**Still open: each room's power and mute state.** We haven't found a read-only query for them. A successful serial acknowledgment means the command was acknowledged; it doesn't prove the resulting room state.
+
+To investigate power and mute state, we need donor **M1 interfaces, P1 remotes, Lifestyle equipment and parts**, along with **RF test equipment, equipment loans, or lab access**. Several RF approaches evaluated so far required equipment beyond the project's current budget. Lower-cost methods & existing captures or research could help.
 
 We can't promise that donated equipment will lead to a working implementation.
 
@@ -12,7 +14,7 @@ This page summarizes research through October 16, 2026. These are leads & unreso
 
 ### 1. Serial feedback through the M1
 
-The existing serial connection would be the simplest place to obtain state. We haven't identified a verified, read-only M1 query for room power, source, absolute volume, or mute. The `BO` response identifies firmware; captured command acknowledgments echo commands rather than returning room state.
+The existing serial connection is the simplest place to obtain state. It already answers volume and selected-input queries (see above). We haven't identified a verified, read-only M1 query for room power or mute. The `BO` response identifies firmware; captured command acknowledgments echo commands rather than returning room state.
 
 We found several commercial-driver leads:
 

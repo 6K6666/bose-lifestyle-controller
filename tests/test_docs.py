@@ -30,7 +30,7 @@ FULL_LINE = ('Unofficial community project. Not affiliated with or endorsed by B
              '"Bose" and "Lifestyle" are trademarks of Bose Corporation, used here only to identify compatible products.')
 SHORT_LINE = 'Home Assistant control for Bose Lifestyle 50 / M1 systems. Unofficial, not affiliated with Bose.'
 DOCS = ROOT / 'docs'
-REGISTRY = 'docs/RELEASE-PLACEHOLDERS.md'
+REGISTRY = '.github/RELEASE-PLACEHOLDERS.md'
 PAGES = sorted([*DOCS.glob('*.md'), ROOT / 'README.md', ROOT / 'NOTICE'])
 PAGE_RELS = [p.relative_to(ROOT).as_posix() for p in PAGES]
 PI_ALLOWED = ('docs/example-raspberry-pi.md', 'docs/hardware.md')
