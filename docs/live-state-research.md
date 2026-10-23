@@ -20,7 +20,7 @@ We found several commercial-driver leads:
 
 - [iRidi's Duotecno documentation](https://doc.iridi.com/SWDL/dev-iridi/Duotecno/) describes Lifestyle 50 volume feedback through a Duotecno gateway. The available examples describe gateway traffic, not the underlying M1 query bytes.
 - [Duotecno's DT10-BOE](https://www.duotecno.be/fr/produits/interfaces/audio-video/dt10?variant=16636) was marketed as a bidirectional Bose interface. The datasheet linked during our investigation described an Integra interface instead, leaving the Bose protocol unresolved.
-- [MyURemote's Lifestyle 40/50 M1 integration notes](https://www.myuremote.com/website/docs/integrations/bose/lifestyle-40-50-m1/) mention configuration-dependent feedback, without publishing the raw query needed here.
+- [MyURemote's Lifestyle 40/50 M1 integration notes](https://www.myuremote.com/website/docs/integrations/bose/lifestyle-40-50-m1/) mention configuration-dependent feedback. [MyURemote](https://www.myuremote.com/website/) helped us discover the volume & selected-input queries that v1.1.0 uses; we thank them. We haven't found a power or mute query this way.
 - An older [Crestron Lifestyle 50 module](https://applicationmarket.crestron.com/content/Help/Bose/lifestyle_50.pdf) describes no feedback & uses a different serial arrangement. It doesn't settle what is possible through our M1 interface.
 
 Useful contributions would include documented, lawful command/reply examples from a working feedback integration or manufacturer documentation explaining a read-only state query. Vendor inquiries were considered but haven't been sent. We haven't established that feedback is impossible.

@@ -36,6 +36,10 @@ Rooms A, B & C now show live volume & selected input. We still need help finding
 
 The project files are at https://github.com/6K6666/bose-lifestyle-controller.
 
+## Credits
+
+[MyURemote](https://www.myuremote.com/website/) helped us discover the serial queries behind the live volume & selected-input indicators.
+
 ## License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
