@@ -25,6 +25,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'deploy'))
 from bose_config import ZONES, SOURCES, parse_config  # noqa: E402
 from bose_request import request  # noqa: E402
+from helpers import QUERY_REPLIES  # noqa: E402
 
 INSTALL = ROOT / 'deploy' / 'install-bridge.sh'
 DOC_UNINSTALL = ROOT / 'docs' / 'uninstall.md'
@@ -41,7 +42,9 @@ sys.path.insert(0, inst)
 def record(text):
     with open(log, 'a') as handle:
         handle.write(text + '\n')
+QUERY_REPLIES = QUERY_REPLIES_LITERAL
 class Port:
+    timeout = None   # pyserial has this attribute; the telemetry poll saves and restores it
     def __init__(self, **kwargs): self.pending = b''
     def open(self): record('open ' + serial_path)
     def close(self): record('close')
@@ -50,6 +53,10 @@ class Port:
         out, self.pending = self.pending[:n], self.pending[n:]
         return out
     def write(self, data):
+        if data in QUERY_REPLIES:   # a telemetry status query: answered, logged apart from commands
+            record('QX ' + data.hex())
+            self.pending = QUERY_REPLIES[data]
+            return len(data)
         record('TX ' + data.hex())
         return len(data)
     def flush(self): pass
@@ -57,7 +64,7 @@ sys.modules['serial'] = types.SimpleNamespace(Serial=Port)
 sys.modules['evdev'] = None
 from bose_bridge import serve
 serve(sock, mode == 'dry', ir_state=state, serial_port=serial_path)
-'''
+'''.replace('QUERY_REPLIES_LITERAL', repr(QUERY_REPLIES))
 
 # The CLI with the socket, state and device-listing folders passed in: the real defaults are never read.
 CLI = ('import sys; sys.path.insert(0, sys.argv[1]); import bose_cli; '
@@ -243,6 +250,18 @@ class TestFreshInstallToConfiguredBridge(FreshInstall):
             self.stop_bridge(proc)
         self.assertEqual(self.log_lines(), [])
 
+        # 4b. Live bridge on the untouched config (every room off, not set up yet): it opens the port, answers status
+        # reads, and transmits nothing at all, not even a status query.
+        proc = self.start_bridge('live')
+        try:
+            self.assertIn(f'open {SERIAL_PATH}', self.log_lines())
+            for _ in range(2):
+                self.assertFalse(any(room['volume']['supported'] for room in self.status()['rooms'].values()))
+        finally:
+            out = self.stop_bridge(proc)
+        self.assertEqual([line for line in self.log_lines() if line.startswith(('TX ', 'QX '))], [])
+        self.assertNotIn('TX ', out)
+
         # 5. Offline changes through the CLI (no bridge running): zone a, source aux, and an experimental no-op.
         zone_a = self.cli('zone', 'a', 'on')
         self.assertEqual(zone_a.returncode, 0, zone_a.stderr)
@@ -265,7 +284,8 @@ class TestFreshInstallToConfiguredBridge(FreshInstall):
             self.stop_bridge(proc)
         self.assertEqual(self.log_lines(), [])
 
-        # 7. Live bridge on the fake serial: zone b and the IR target through the CLI, and no frame written.
+        # 7. Live bridge on the fake serial, now set up (room a on): zone b and the IR target through the CLI. Status reads
+        # may send the two telemetry status queries; no command frame is written.
         proc = self.start_bridge('live')
         try:
             self.assertIn(f'open {SERIAL_PATH}', self.log_lines())
@@ -278,8 +298,9 @@ class TestFreshInstallToConfiguredBridge(FreshInstall):
             self.assertEqual(self.status()['config']['ir'], {'zone': 'b'})
         finally:
             out = self.stop_bridge(proc)
-        self.assertNotIn('TX', ' '.join(self.log_lines()))
-        self.assertNotIn('TX', out)
+        self.assertEqual([line for line in self.log_lines() if line.startswith('TX ')], [])
+        self.assertTrue(any(line.startswith('QX ') for line in self.log_lines()), 'a set-up bridge polls on a status read')
+        self.assertTrue(all(line.split()[-1].startswith('status-query-') for line in out.splitlines() if line.startswith('TX ')), out)
         self.assertEqual(json.loads(self.config_bytes())['ir'], {'zone': 'b'})
 
         # 8. A re-run after the user's changes and the bridge's own files: the saved config is never overwritten.

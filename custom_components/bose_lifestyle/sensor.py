@@ -28,4 +28,5 @@ class Status(BoseEntity,SensorEntity):
         if self.key=='mute': return {'meaning':'Last successful command only; not live Bose feedback.'}
         return {'fault':self.coordinator.data['bridge']['fault'],'config':self.coordinator.data['bridge'].get('config'),
                 'configuration':self.coordinator.data['config'],
+                'rooms':self.coordinator.data['rooms'],
                 'fault_message':self.coordinator.config_entry.options.get('fault_message','')}

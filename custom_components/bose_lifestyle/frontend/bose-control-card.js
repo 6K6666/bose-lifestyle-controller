@@ -11,6 +11,7 @@
     mute: 'Mute', unmute: 'Unmute', tv: 'TV', music: 'Music',
     'source-am': 'AM', 'source-fm': 'FM', 'source-cd': 'CD', 'source-video-2': 'Video 2', 'source-tape': 'Tape',
   };
+  const DEFAULT_SOURCE_LABELS = { am: 'AM', fm: 'FM', cd: 'CD', aux: 'AUX', 'video-1': 'Video 1', 'video-2': 'Video 2', tape: 'Tape' };
   // Exact wording for each failure class; these match strings.json "exceptions" (test_bose_transport.py checks both).
   const MESSAGES = {
     not_sent: "That wasn't sent. Nothing was changed.",
@@ -135,6 +136,16 @@
     return healthState === 'serial-open';
   }
 
+  function telemetryLine(room, field, label, nowSec, format) {
+    const sample = room && room[field];
+    if (!sample || sample.supported !== true || sample.value === null) return { label, value: 'State unavailable' };
+    const value = format(sample.value);
+    if (value === null) return { label, value: 'State unavailable' };
+    const age = typeof sample.observed_at === 'number' && Number.isFinite(sample.observed_at)
+      ? nowSec - sample.observed_at : Infinity;
+    return { label, value: `${value}${age > 15 ? ' · Last reported' : ''}` };
+  }
+
   function irLine(target) {
     if (!target) return '';
     const head = target.zone_name ? `This remote controls ${esc(target.zone_name)}` : 'The remote has no target room';
@@ -182,6 +193,11 @@
       html += '<div class="seg power">' + ['power-on', 'power-off'].filter(has).map(k => control(k, b[k], "", model.name)).join('') + '</div>';
     }
     html += `<span class="chev" aria-hidden="true">${icon('chevron')}</span></div>`;
+    if (model.telemetry) {
+      // Reported values, shown for every room even while its power is off; a selected input is not proof that audio is playing.
+      html += '<dl class="telemetry">' + [model.telemetry.volume, model.telemetry.source]
+        .map(line => `<dt>${esc(line.label)}</dt><dd>${esc(line.value)}</dd>`).join('') + '</dl>';
+    }
     // Why a control is unavailable, as visible text under the room name (not only a title attribute).
     const reasons = [...new Set(Object.values(b).filter(v => v.reason && REASON_TEXT[v.reason]).map(v => REASON_TEXT[v.reason]))];
     html += reasons.map(text => `<div class="why">${esc(text)}</div>`).join('');
@@ -433,11 +449,24 @@
       const attrs = outcome ? outcome.attributes : null;
       const nowSec = this.now() / 1000;
       const inputs = this.layout.inputs || {};
+      const reportedRooms = healthAttrs.rooms || {};
       const rooms = this.layout.rooms.filter(room => room.enabled !== false).map(room => {
         const off = room.enabled === false;   // a zone turned off in settings stays listed, flagged and disabled
+        const reported = reportedRooms[room.id] || {};
+        const sourceName = value => {
+          if (typeof value !== 'string' || !Object.prototype.hasOwnProperty.call(DEFAULT_SOURCE_LABELS, value)) return null;
+          const configured = inputs[value];
+          return configured && typeof configured.name === 'string' && configured.name.trim()
+            ? configured.name.trim() : DEFAULT_SOURCE_LABELS[value];
+        };
         return {
           id: room.id, name: room.name, open: this.openId === room.id, disabled: !ready || off,
           caption: off ? 'Turned off in settings' : lastSent(attrs, room.id, nowSec, room.name, inputs),
+          telemetry: {
+            volume: telemetryLine(reported, 'volume', 'Volume', nowSec,
+              value => Number.isSafeInteger(value) && value >= 0 && value <= 255 ? String(value) : null),
+            source: telemetryLine(reported, 'source', 'Selected input', nowSec, sourceName),
+          },
           buttons: Object.fromEntries(Object.entries(room.buttons).map(([key, entity]) => {
             const st = states[entity];
             const reason = (room.unavailable && room.unavailable[key]) || null;
@@ -789,106 +818,129 @@
   if (typeof customElements === 'undefined') return;   // loaded by node for the logic tests
 
   const STYLE = `
-    :host { display: block; position: relative; max-width: 480px; font-size: 16px; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; margin: 0 auto; padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; }
+    /* Arc-style roles built from the Home Assistant theme, so the card follows any HA theme and dark mode and its rooms
+       match the cards around it, both on its own dashboard and inside an existing one. Sizes sit on a 4 px grid. */
+    :host {
+      --bc-surface: var(--ha-card-background, var(--card-background-color, #fff));
+      --bc-fg: var(--primary-text-color, #212121);
+      --bc-fg-2: var(--secondary-text-color, #727272);
+      --bc-accent: var(--primary-color, #03a9f4);
+      --bc-on-accent: var(--text-primary-color, #fff);
+      --bc-danger: var(--error-color, #db4437);
+      --bc-border: var(--ha-card-border-color, var(--divider-color, rgba(0, 0, 0, .12)));
+      --bc-border-subtle: color-mix(in srgb, var(--bc-fg) 10%, transparent);
+      --bc-border-strong: color-mix(in srgb, var(--bc-fg) 24%, transparent);
+      --bc-fill: color-mix(in srgb, var(--bc-fg) 6%, transparent);
+      --bc-fill-strong: color-mix(in srgb, var(--bc-fg) 12%, transparent);
+      --bc-pad: 16px;
+      --bc-radius-surface: var(--ha-card-border-radius, var(--ha-border-radius-lg, 12px));
+      --bc-radius-control: max(8px, calc(var(--bc-radius-surface) - var(--bc-pad)));   /* concentric with the room surface */
+      --bc-ease: cubic-bezier(.2, 0, 0, 1);
+      display: block; position: relative; max-width: 480px; margin: 0 auto; font-size: 16px; line-height: 1.4; letter-spacing: -.01em;
+      color: var(--bc-fg); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
+    }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    button { font: inherit; color: inherit; border: 0; cursor: pointer; touch-action: manipulation; }
-    .app { display: flex; flex-direction: column; gap: 12px; transition: opacity .2s; }
+    button { font: inherit; letter-spacing: inherit; color: inherit; border: 0; background: none; cursor: pointer; touch-action: manipulation; }
+    .app { display: flex; flex-direction: column; gap: 8px; transition: opacity .2s var(--bc-ease); }
     .app.dim { opacity: .55; }
-    .room { background: var(--ha-card-background, var(--card-background-color, #1c1c1e)); color: var(--primary-text-color, #fff); border-radius: 22px; padding: 14px 16px; }
-    .head { display: flex; align-items: center; gap: 8px; min-height: 44px; }
-    .title { flex: 1; min-width: 0; text-align: left; background: none; padding: 0; min-height: 44px; }
-    .name { display: block; min-width: 0; overflow-wrap: anywhere; font-size: 1.25em; font-weight: 600; line-height: 1.2; }
-    .cap { display: block; font-size: 0.8125em; color: var(--secondary-text-color, #8e8e93); margin-top: 2px; }
-    .chev { color: var(--secondary-text-color, #8e8e93); display: flex; transition: transform .2s; }
+    .room, .sheet { background: var(--bc-surface); color: var(--bc-fg); border: var(--ha-card-border-width, 1px) solid var(--bc-border); border-radius: var(--bc-radius-surface); box-shadow: var(--ha-card-box-shadow, none); padding: 12px var(--bc-pad) var(--bc-pad); }
+    .head { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+    .title { flex: 1; min-width: 0; text-align: left; padding: 0; min-height: 44px; }
+    .name { display: block; min-width: 0; overflow-wrap: anywhere; font-size: 1.125em; font-weight: 500; line-height: 1.3; }
+    .cap { display: block; font-size: .875em; color: var(--bc-fg-2); margin-top: 2px; }
+    .why { font-size: .875em; color: var(--bc-fg-2); padding-top: 4px; }
+    .telemetry { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 16px; margin: 8px 0 0; font-size: .875em; overflow-wrap: anywhere; }
+    .telemetry dt { color: var(--bc-fg-2); }
+    .telemetry dd { margin: 0; font-variant-numeric: tabular-nums; }
+    .chev { color: var(--bc-fg-2); display: flex; transition: transform .2s var(--bc-ease); }
     .open .chev { transform: rotate(180deg); }
-    .seg { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 999px; background: color-mix(in srgb, var(--primary-text-color, #fff) 12%, transparent); }
-    /* Source tiles: separate rounded buttons with their own border, 8 px apart; 2 columns at 393 and 320 px, 3 from 440 px (480 px cap). */
-    .seg.src { display: grid; grid-template-columns: repeat(auto-fit, minmax(8em, 1fr)); gap: 8px; margin-top: 14px; background: none; padding: 0; border-radius: 0; }
-    .seg.src .ctl { flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 56px; padding: 8px 6px; border-radius: 12px; text-align: center; line-height: 1.2; border: 1px solid color-mix(in srgb, var(--primary-text-color, #fff) 25%, transparent); background: color-mix(in srgb, var(--primary-text-color, #fff) 8%, transparent); }
+    .ctl { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; min-width: 44px; padding: 0 16px; border: 1px solid var(--bc-border-strong); border-radius: var(--bc-radius-control); font-size: .875em; font-weight: 500; transition: transform .1s var(--bc-ease), opacity .15s, background-color .15s; }
+    .ctl:active { transform: scale(.97); background: var(--bc-fill); }
+    .ctl:disabled { opacity: .4; cursor: default; }
+    .ctl.warn, .pill { background: var(--bc-accent); border-color: var(--bc-accent); color: var(--bc-on-accent); }
+    /* Power: two commands side by side. Neither is shown as selected: the bridge does not report power state. */
+    .seg { display: flex; flex-wrap: wrap; gap: 2px; padding: 2px; border-radius: calc(var(--bc-radius-control) + 2px); background: var(--bc-fill-strong); }
+    .seg .ctl { flex: 1; border: 0; border-radius: var(--bc-radius-control); min-height: 44px; }
+    .seg .ctl:active { background: var(--bc-surface); }
+    .power .ctl svg { display: none; }
+    /* Source tiles: 2 columns at 320 to 439 px, 3 from 440 px (480 px cap). "Last sent" marks the last press, not the playing input. */
+    .seg.src { display: grid; grid-template-columns: repeat(auto-fit, minmax(8em, 1fr)); gap: 8px; margin-top: 16px; background: none; padding: 0; border-radius: 0; }
+    .seg.src .ctl { flex-direction: column; gap: 4px; min-height: 56px; padding: 8px; border: 1px solid var(--bc-border-strong); border-radius: var(--bc-radius-control); background: var(--bc-fill); text-align: center; line-height: 1.3; font-weight: 400; }
     .seg.src .ctl svg { flex: 0 0 auto; }
     .seg.src .ctl span { min-width: 0; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; text-overflow: ellipsis; }
-    .tag { display: inline-block; font-size: 0.75em; font-style: normal; font-weight: 600; color: var(--primary-color, #0a84ff); }
-    /* Setup: nickname field and icon picker under each connected switch. */
-    .src-block { border-top: 1px solid color-mix(in srgb, var(--primary-text-color, #fff) 12%, transparent); padding-top: 2px; }
-    .nick { grid-template-columns: 1fr; }
-    fieldset.icons { border: 0; margin: 0 0 8px; padding: 0; min-width: 0; }
-    .icons legend { font-size: 0.8125em; color: var(--secondary-text-color, #8e8e93); padding: 0; margin-bottom: 4px; }
-    .ico-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-    .ico { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 44px; min-width: 5em; font-size: 0.9375em; }
-    .ico input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; z-index: 1; }
-    .ico-box { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; border: 2px solid transparent; background: color-mix(in srgb, var(--primary-text-color, #fff) 10%, transparent); }
-    .ico input:checked ~ .ico-box { border: 2px solid var(--primary-color, #0a84ff); background: color-mix(in srgb, var(--primary-color, #0a84ff) 18%, transparent); }
-    .ico input:checked ~ .ico-txt { font-weight: 600; }
-    .ico input:focus-visible ~ .ico-box { outline: 3px solid var(--primary-text-color, #fff); outline-offset: 2px; }
-    .ctl { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 14px; border-radius: 14px; background: color-mix(in srgb, var(--primary-text-color, #fff) 12%, transparent); font-size: 0.9375em; transition: transform .1s, opacity .15s; }
-    .ctl:active { transform: scale(.97); }
-    .ctl:disabled { opacity: .4; cursor: default; }
-    .seg .ctl { flex: 1; background: none; border-radius: 999px; min-height: 44px; }
-    .seg .ctl:active { background: color-mix(in srgb, var(--primary-text-color, #fff) 18%, transparent); }
-    .power .ctl svg { display: none; }
-    .power .ctl { font-weight: 500; padding: 0 16px; }
-    .vol { display: flex; margin-top: 14px; border-radius: 16px; overflow: hidden; background: color-mix(in srgb, var(--primary-text-color, #fff) 12%, transparent); }
-    .vol .ctl { flex: 1; min-height: 56px; border-radius: 0; background: none; }
+    .tag { display: inline-block; font-size: .857em; font-style: normal; font-weight: 500; color: var(--bc-accent); }
+    .vol { display: flex; margin-top: 16px; border: 1px solid var(--bc-border-strong); border-radius: var(--bc-radius-control); overflow: hidden; }
+    .vol .ctl { flex: 1; min-height: 50px; border: 0; border-radius: 0; }
     .vol .ctl span, .icon-only span { display: none; }
-    .vol .ctl + .ctl { border-left: 1px solid color-mix(in srgb, var(--primary-text-color, #fff) 15%, transparent); }
-    .row { display: flex; gap: 10px; margin-top: 10px; }
+    .vol .ctl + .ctl { border-left: 1px solid var(--bc-border-strong); }
+    .row { display: flex; gap: 8px; margin-top: 8px; }
     .row .ctl { flex: 1; }
-    .rrow > * { min-width: 0; }
-    /* The row is the 44 px target; the box itself stays normal size and sits beside its label. */
-    .rrow input[type=checkbox] { width: 22px; height: 22px; margin: 0; flex: 0 0 auto; accent-color: var(--primary-color, #0a84ff); }
-    .rrow.ack { display: flex; align-items: center; justify-content: flex-start; gap: 10px; min-height: 44px; }
-    .ctl.warn { background: var(--primary-color, #0a84ff); color: #fff; }
-    .ir { text-align: center; font-size: 0.875em; color: var(--secondary-text-color, #8e8e93); padding: 2px 8px; }
-    .ir.warn { color: var(--error-color, #ff453a); }
-    .msg, .notice { text-align: center; font-size: 0.875em; color: var(--secondary-text-color, #8e8e93); padding: 4px 8px; }
-    .gear { align-self: flex-end; background: none; color: var(--secondary-text-color, #8e8e93); min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
-    .sheet { background: var(--ha-card-background, var(--card-background-color, #1c1c1e)); color: var(--primary-text-color, #fff); border-radius: 22px; padding: 14px 16px; }
+    /* Header: the bridge name as a section title, with the settings icon on the same line. */
+    .bhead { padding: 8px 52px 4px 4px; }
+    .bhead .name { font-size: 1.375em; font-weight: 500; line-height: 1.2; }
+    .gear { position: absolute; top: 0; right: env(safe-area-inset-right); color: var(--bc-fg-2); min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--bc-radius-control); }
+    .setup { display: flex; justify-content: center; }
+    .ir { text-align: center; font-size: .875em; color: var(--bc-fg-2); padding: 4px 8px; }
+    .ir.warn, .err { color: var(--bc-danger); }
+    .msg, .notice { text-align: center; font-size: .875em; color: var(--bc-fg-2); padding: 4px 8px; }
+    .disclaimer { margin: 0; padding: 4px 8px 0; text-align: center; }
+    .notice .ctl { margin: 8px auto 0; }
+    /* Settings sheet. */
     .shead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
-    .notice .ctl { margin: 6px auto 0; }
+    .pill { border-radius: var(--bc-radius-control); padding: 0 16px; min-height: 44px; font-size: .875em; font-weight: 500; }
+    .rrow { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--bc-border-subtle); }
+    .rrow > * { min-width: 0; }
+    .rrow input[type=checkbox] { width: 22px; height: 22px; margin: 0; flex: 0 0 auto; accent-color: var(--bc-accent); }   /* the row is the 44 px target */
+    .rrow.ack { display: flex; align-items: center; justify-content: flex-start; gap: 12px; min-height: 44px; }
     .ir-row > * { grid-column: 1 / -1; }   /* the label, the field and the selector each take a full row */
-    .pill { background: var(--primary-color, #0a84ff); color: #fff; border-radius: 999px; padding: 0 16px; min-height: 44px; }
-    .rrow { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 10px 0; border-top: 1px solid color-mix(in srgb, var(--primary-text-color, #fff) 12%, transparent); }
-    .rname { font: inherit; font-size: 1em; color: inherit; background: transparent; border: 1px solid color-mix(in srgb, var(--primary-text-color, #fff) 30%, transparent); border-radius: 10px; min-height: 44px; width: 100%; padding: 0 10px; }
-    .rname:focus { border-color: var(--primary-color, #0a84ff); }
+    .rname { font: inherit; letter-spacing: inherit; font-size: 1em; color: inherit; background: transparent; border: 1px solid var(--bc-border-strong); border-radius: var(--bc-radius-control); min-height: 44px; width: 100%; padding: 0 12px; }
+    .rname:focus { border-color: var(--bc-accent); }
     .room-row .field-label, .room-row .rname { grid-column: 1 / -1; }
     .room-row .field-label { min-height: 0; padding-top: 4px; }
-    .helper { margin: 2px 0 0; }
+    .helper { margin: 4px 0 0; }
     .exp-row.locked, .room-row.locked .rlabel, .room-row.locked .rname { opacity: .45; }
-    /* The Experimental gate: a bordered box with a drawn checkbox (22 px, 2 px border, accent fill and white check when ticked). */
-    .gate { display: flex; align-items: center; gap: 12px; min-height: 44px; margin: 10px 0; padding: 10px 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--primary-text-color, #fff) 30%, transparent); background: color-mix(in srgb, var(--primary-text-color, #fff) 8%, transparent); cursor: pointer; font-size: 0.9375em; }
-    .gate-text { flex: 1; min-width: 0; }
-    .gate-state { font-weight: 600; color: var(--primary-color, #0a84ff); }
-    .cbox { -webkit-appearance: none; appearance: none; flex: 0 0 auto; width: 22px; height: 22px; margin: 0; border: 2px solid var(--secondary-text-color, #8e8e93); border-radius: 4px; background-color: transparent; background-position: center; background-repeat: no-repeat; background-size: 16px 16px; }
-    .cbox:checked { background-color: var(--primary-color, #0a84ff); border-color: var(--primary-color, #0a84ff); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
-    .cbox:focus-visible { outline: 3px solid var(--primary-text-color, #fff); outline-offset: 2px; }
+    .rlabel { font-size: .875em; font-weight: 500; min-height: 44px; display: flex; align-items: center; }
+    .meta { grid-column: 1 / -1; font-size: .875em; color: var(--bc-fg-2); }
     .bridge-row { grid-template-columns: 1fr; }   /* the name field and its reset button always stack, from 320 px up */
     .brow { display: flex; }
-    .bhead { text-align: center; padding: 26px 0 18px; }
-    .bhead .name { display: block; font-size: 1.6em; font-weight: 700; letter-spacing: -.01em; }
-    .rlabel { font-size: 0.875em; font-weight: 600; min-height: 44px; display: flex; align-items: center; }
-    .setup { display: flex; justify-content: center; }
-    .meta { grid-column: 1 / -1; font-size: 0.8125em; color: var(--secondary-text-color, #8e8e93); }
-    .disclaimer { margin: 0; padding: 2px 8px 0; text-align: center; }
+    .src-block { border-top: 1px solid var(--bc-border-subtle); padding-top: 4px; }
+    .nick { grid-template-columns: 1fr; }
+    fieldset.icons { border: 0; margin: 0 0 8px; padding: 0; min-width: 0; }
+    .icons legend { font-size: .875em; color: var(--bc-fg-2); padding: 0; margin-bottom: 4px; }
+    .ico-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .ico { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 44px; min-width: 5em; font-size: .875em; }
+    .ico input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; z-index: 1; }
+    .ico-box { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--bc-radius-control); border: 1px solid var(--bc-border-strong); }
+    .ico input:checked ~ .ico-box { border: 2px solid var(--bc-accent); background: color-mix(in srgb, var(--bc-accent) 14%, transparent); color: var(--bc-accent); }
+    .ico input:checked ~ .ico-txt { font-weight: 500; }
+    /* The Experimental gate: a bordered box with a drawn checkbox (22 px, 2 px border, accent fill and a check when ticked). */
+    .gate { display: flex; align-items: center; gap: 12px; min-height: 44px; margin: 12px 0; padding: 12px; border-radius: var(--bc-radius-control); border: 1px solid var(--bc-border-strong); cursor: pointer; font-size: .875em; }
+    .gate-text { flex: 1; min-width: 0; }
+    .gate-state { font-weight: 500; color: var(--bc-accent); }
+    .cbox { -webkit-appearance: none; appearance: none; flex: 0 0 auto; width: 22px; height: 22px; margin: 0; border: 2px solid var(--bc-fg-2); border-radius: 6px; background-color: transparent; background-position: center; background-repeat: no-repeat; background-size: 16px 16px; }
+    .cbox:checked { background-color: var(--bc-accent); border-color: var(--bc-accent); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
     .sw { position: relative; width: 51px; height: 44px; }   /* a 44 px hit area around the 31 px track */
     .sw input { position: absolute; inset: 0; opacity: 0; margin: 0; width: 100%; height: 100%; z-index: 1; }
-    .sw span { position: absolute; left: 0; right: 0; top: 6.5px; bottom: 6.5px; border-radius: 999px; background: color-mix(in srgb, var(--primary-text-color, #fff) 20%, transparent); transition: background .2s; }
-    .sw span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; transition: transform .2s; }
-    .sw input:checked + span { background: #34c759; }
+    .sw span { position: absolute; left: 0; right: 0; top: 6.5px; bottom: 6.5px; border-radius: 999px; background: var(--bc-fill-strong); transition: background .2s var(--bc-ease); }
+    .sw span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: var(--bc-on-accent); box-shadow: 0 1px 2px rgba(0, 0, 0, .2); transition: transform .2s var(--bc-ease); }
+    .sw input:checked + span { background: var(--bc-accent); }
     .sw input:checked + span::after { transform: translateX(20px); }
-    .confirm { margin: 8px 0; padding: 12px; border-radius: 14px; background: color-mix(in srgb, var(--primary-text-color, #fff) 10%, transparent); font-size: 0.875em; }
+    .confirm { margin: 8px 0; padding: 12px; border-radius: var(--bc-radius-control); border: 1px solid var(--bc-border-strong); font-size: .875em; }
     .confirm p { margin: 0 0 8px; }
-    .err { color: var(--error-color, #ff453a); font-size: 0.875em; }
-    .diag { margin-top: 12px; border-top: 1px solid color-mix(in srgb, var(--primary-text-color, #fff) 12%, transparent); padding-top: 12px; }
-    .dhead { font-weight: 600; margin-bottom: 4px; }
-    .events { max-height: 200px; overflow: auto; padding-left: 18px; font-size: 0.75em; margin: 8px 0; }
-    .events span { color: var(--secondary-text-color, #8e8e93); word-break: break-all; }
-    .links { display: flex; gap: 16px; margin-top: 10px; font-size: 0.875em; }
-    .links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--primary-color, #0a84ff); text-decoration: none; }
+    .err { font-size: .875em; }
+    .diag { margin-top: 12px; border-top: 1px solid var(--bc-border-subtle); padding-top: 12px; }
+    .dhead { font-weight: 500; margin-bottom: 4px; }
+    .events { max-height: 200px; overflow: auto; padding-left: 20px; font-size: .75em; margin: 8px 0; }
+    .events span { color: var(--bc-fg-2); word-break: break-all; }
+    .links { display: flex; gap: 16px; margin-top: 12px; font-size: .875em; }
+    .links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--bc-accent); text-decoration: none; }
     summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; }
     .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-    /* Keyboard focus is always visible; the ring is the card's text color, so it holds on light and dark themes. */
-    button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--primary-text-color, #fff); outline-offset: 2px; }
-    .sw input:focus-visible + span { outline: 3px solid var(--primary-text-color, #fff); outline-offset: 2px; }
+    /* Keyboard focus only (never on pointer focus); the ring is the card's text color, so it holds on light and dark themes. */
+    button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--bc-fg); outline-offset: 2px; }
+    .sw input:focus-visible + span { outline: 3px solid var(--bc-fg); outline-offset: 2px; }
+    .ico input:focus-visible ~ .ico-box { outline: 3px solid var(--bc-fg); outline-offset: 2px; }
+    .cbox:focus-visible { outline: 3px solid var(--bc-fg); outline-offset: 2px; }
     /* Not-sent and other state changes are instant when the user asks for reduced motion. */
     @media (prefers-reduced-motion: reduce) {
       .app, .chev, .ctl, .sw span, .sw span::after { transition: none; }
@@ -907,6 +959,7 @@
       this.statusEl = this.shadowRoot.getElementById('status');
       this.alertEl = this.shadowRoot.getElementById('alert');
       this.last = '';
+      this.volumeHoldActive = false; this.volumeCalls = new Set(); this.volumeRefreshTimer = null;
       this.focusNext = null;   // data-focus key to focus after the next render (opener of the sheet, or the control that replaced the focused one)
       let storage = null;
       try { storage = window.localStorage; } catch (e) { storage = null; }
@@ -924,6 +977,11 @@
       this.endHold = () => this.stopHold();                              // blur, hidden page, removal: always ends a hold
       this.endPointer = e => {                                           // a release of a different pointer does not end this hold
         if (e && e.pointerId !== undefined && this.holdPointerId !== undefined && e.pointerId !== this.holdPointerId) return;
+        if (e && e.type === 'pointerleave' && e.buttons) {
+          clearTimeout(this.holdTimer); clearInterval(this.holdRepeat);
+          this.holdTimer = null; this.holdRepeat = null;
+          return;                                                         // do not refresh until the still-held pointer is released
+        }
         this.stopHold();
       };
     }
@@ -943,7 +1001,13 @@
     }
 
     setConfig() { /* zero configuration */ }
-    getCardSize() { return 5; }
+    // Masonry views balance columns by this (1 unit is about 50 px): the header plus one closed room per row.
+    getCardSize() {
+      const layout = this.controller && this.controller.layout;
+      return 1 + 2 * (layout && Array.isArray(layout.rooms) ? layout.rooms.length : 2);
+    }
+    // Sections views: full section width by default, never narrower than half; the height follows the content.
+    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
     static getStubConfig() { return {}; }
     set hass(hass) { this.controller.setHass(hass); }
 
@@ -1001,22 +1065,54 @@
       if (!t || t.disabled || event.button > 0 || !REPEAT_KEYS.has(t.dataset.key)) return;
       const c = this.controller;
       this.stopHold();
+      this.cancelVolumeRefresh();
+      this.volumeHoldActive = true;
       this.volumePointerAt = c.now();
       this.holdPointerId = event.pointerId;
-      c.tap(t.dataset.entity, t.dataset.room, t.dataset.key);
+      this.trackVolumeCall(t.dataset.entity, t.dataset.room, t.dataset.key);
       this.holdTimer = setTimeout(() => {
         this.holdRepeat = setInterval(() => {
           if (!this.isConnected) return this.stopHold();   // the card was removed while held: send nothing more
-          c.tap(t.dataset.entity, t.dataset.room, t.dataset.key);
+          this.trackVolumeCall(t.dataset.entity, t.dataset.room, t.dataset.key);
         }, HOLD_REPEAT_MS);
       }, HOLD_START_MS);
+    }
+
+    trackVolumeCall(entity, room, key) {
+      this.cancelVolumeRefresh();
+      const call = Promise.resolve(this.controller.tap(entity, room, key));
+      this.volumeCalls.add(call);
+      const settled = () => { this.volumeCalls.delete(call); this.scheduleVolumeRefresh(); };
+      call.then(settled, settled);
+      return call;
+    }
+
+    cancelVolumeRefresh() {
+      clearTimeout(this.volumeRefreshTimer);
+      this.volumeRefreshTimer = null;
+    }
+
+    scheduleVolumeRefresh() {
+      if (this.volumeHoldActive || this.volumeCalls.size) return;
+      this.cancelVolumeRefresh();
+      this.volumeRefreshTimer = setTimeout(() => {
+        this.volumeRefreshTimer = null;
+        if (this.volumeHoldActive || this.volumeCalls.size || !this.isConnected) return;
+        const health = this.controller.layout && this.controller.layout.health;
+        const hass = this.controller.hass;
+        if (!health || !hass || typeof hass.callService !== 'function') return;
+        Promise.resolve(hass.callService('homeassistant', 'update_entity', { entity_id: health })).catch(() => {});
+      }, 450);
     }
 
     stopHold() {
       // The click that follows a release is judged from the release, not the press, so a long hold never adds a step.
       if (this.volumePointerAt !== undefined && this.controller) this.volumePointerAt = this.controller.now();
+      const wasHolding = this.volumeHoldActive;
+      this.volumeHoldActive = false;
       clearTimeout(this.holdTimer); clearInterval(this.holdRepeat);
       this.holdTimer = null; this.holdRepeat = null; this.holdPointerId = undefined;
+      if (wasHolding) this.scheduleVolumeRefresh();
     }
 
     onClick(event) {
@@ -1027,6 +1123,7 @@
       if (t.dataset.key && REPEAT_KEYS.has(t.dataset.key) && this.volumePointerAt !== undefined && c.now() - this.volumePointerAt < 1000) {
         this.volumePointerAt = undefined; return;
       }
+      if (t.dataset.key && VOLUME_KEYS.has(t.dataset.key)) return this.trackVolumeCall(t.dataset.entity, t.dataset.room, t.dataset.key);
       if (t.dataset.key) return c.tap(t.dataset.entity, t.dataset.room, t.dataset.key);
       switch (t.dataset.act) {
         case 'toggle': return c.toggleRoom(t.dataset.room);

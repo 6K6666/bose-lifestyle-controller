@@ -5,6 +5,7 @@ import logging
 import time
 from pathlib import Path
 from homeassistant.const import Platform
+from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers import device_registry as dr
 from .client import Client, BridgeError
@@ -40,7 +41,9 @@ async def async_setup(hass,config):
 
 class Coordinator(DataUpdateCoordinator):
     def __init__(self,hass,entry):
-        super().__init__(hass,_LOGGER,name='Bose Lifestyle Assistant',config_entry=entry,update_interval=timedelta(seconds=5))
+        refresh_debouncer=Debouncer(hass,_LOGGER,cooldown=1.0,immediate=True)
+        super().__init__(hass,_LOGGER,name='Bose Lifestyle Assistant',config_entry=entry,
+                         update_interval=timedelta(seconds=5),request_refresh_debouncer=refresh_debouncer)
         self.client=Client(entry.data,config_dir=Path(hass.config.config_dir))   # the same directory the pairing flow keys and pins under
         self.read_at=0
         self._fault=None

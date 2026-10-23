@@ -31,6 +31,8 @@ FAKE = r'''
 import os,sys,types,time
 mode,path,log,state,flags,ir_config,ir_fd=sys.argv[1:8]
 from bose_commands import COMMANDS,RESPONSES,CATALOG,expected_reply
+sys.path.insert(0,'tests')
+from helpers import QUERY_REPLIES
 def guarded(real,name):
  def call(*args,**kwargs):
   if os.path.exists(os.path.join(flags,'fail-'+name)): raise OSError(5,'injected '+name)
@@ -42,10 +44,14 @@ class Port:
  def open(self): pass
  def close(self): pass
  in_waiting=0
+ timeout=None   # pyserial has this attribute; the telemetry poll saves and restores it
  def read(self,n):
   out,self.pending=self.pending[:n],self.pending[n:]
   return out
  def write(self,data):
+  if data in QUERY_REPLIES:   # a telemetry status query: answered, logged apart from commands
+   with open(log,'a') as f: f.write('QX '+data.hex()+'\n')
+   self.pending=QUERY_REPLIES[data]; return len(data)
   with open(log,'a') as f: f.write('TX '+data.hex()+'\n')
   name=next(k for k in COMMANDS if COMMANDS[k]==data)
   exact=name=='identify' or (name in CATALOG and CATALOG[name].verified)
@@ -106,7 +112,8 @@ with tempfile.TemporaryDirectory() as tmp, bridge(tmp) as (path, log, _):
     assert reply == {'ok': False, 'error': 'invalid_request'}
     assert json.loads(request(path, b'status\n'))['bridge']['fault'] is None
     assert before == (Path(tmp, 'config.json').read_bytes(), Path(tmp, 'ir-state.json').read_bytes())
-    assert not log.exists(), 'malformed management request transmitted serial bytes'
+    # The status read above may send the two telemetry queries (logged QX); the malformed request itself sends no command.
+    assert not log.exists() or 'TX ' not in log.read_text(), 'malformed management request transmitted a command'
 
 
 def sent(log):

@@ -23,16 +23,22 @@ FAKE = r'''
 import sys,types
 mode,path,log,state=sys.argv[1:5]
 from bose_commands import COMMANDS,RESPONSES,CATALOG,expected_reply
+sys.path.insert(0,'tests')
+from helpers import QUERY_REPLIES
 class Port:
  def __init__(self,**kwargs): self.pending=b''
  def open(self):
   with open(log,'a') as f: f.write('open\n')
  def close(self): pass
  in_waiting=0
+ timeout=None   # pyserial has this attribute; the telemetry poll saves and restores it
  def read(self,n):
   out,self.pending=self.pending[:n],self.pending[n:]
   return out
  def write(self,data):
+  if data in QUERY_REPLIES:   # a telemetry status query: answered, logged apart from commands
+   with open(log,'a') as f: f.write('QX '+data.hex()+'\n')
+   self.pending=QUERY_REPLIES[data]; return len(data)
   with open(log,'a') as f: f.write('TX '+data.hex()+'\n')
   name=next(k for k in COMMANDS if COMMANDS[k]==data)
   if name=='identify': reply=RESPONSES['identify']

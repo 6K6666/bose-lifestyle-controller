@@ -49,7 +49,11 @@ def bridge_process(mode='dry'):
 import sys,types,os
 from pathlib import Path
 mode,path,log=sys.argv[1:]
+sys.path.insert(0,'tests')
+from helpers import QUERY_REPLIES
 class Port:
+ timeout=None   # pyserial has this attribute; the telemetry poll saves and restores it
+ query=None     # the rest of a telemetry query reply while a query is the last write
  def __init__(self,**kwargs): self.sent=None; self.failed=False
  def open(self):
   with open(log,'a') as f: f.write('open\n')
@@ -57,12 +61,16 @@ class Port:
  def close(self): pass
  @property
  def in_waiting(self):
+  self.query=None   # every exchange starts with this pre-input check: a finished query reply is over
   with open(log,'a') as f: f.write('waiting\n')
-  if mode=='transport' and not Path(log+'.lost').exists():
+  armed=Path(log+'.armed').exists()   # the suite arms these faults just before its command, after the status poll
+  if mode=='transport' and armed and not Path(log+'.lost').exists():
    Path(log+'.lost').touch(); raise OSError('disconnected before TX')
-  return 1 if mode=='pre-input' else 0
+  return 1 if mode=='pre-input' and armed else 0
  def read(self,n):
   if not n: return b''
+  if self.query is not None:   # a telemetry query always gets its real reply; the modes break commands only
+   out,self.query=self.query[:n],self.query[n:]; return out
   if mode=='uncaptured': return b'\r\r>.C24002030000\r'
   if mode=='pre-input':return b'x'
   from bose_commands import COMMANDS,RESPONSES
@@ -72,6 +80,10 @@ class Port:
   if mode=='extra':return data+b'late'
   return b'wrong' if mode=='wrong' else data
  def write(self,data):
+  if data in QUERY_REPLIES:
+   with open(log,'a') as f: f.write('QX '+data.hex()+'\n')
+   self.query=QUERY_REPLIES[data]; return len(data)
+  self.query=None
   with open(log,'a') as f: f.write('TX '+data.hex()+'\n')
   self.sent=data
   if mode=='write-error':raise OSError('lost during TX')
@@ -146,10 +158,11 @@ print('Bounded exact request framing, cached dry status and no dry-run wire budg
 for mode in ('live','partial','wrong','write-error','short-reply','extra','pre-input','transport','absent'):
     with bridge_process(mode) as (path, log, process):
         before=log.read_text()
-        initial=status(path)
-        assert log.read_text()==before, 'status touched serial'
+        initial=status(path)   # may send the two telemetry status queries (logged QX), never a command
+        assert log.read_text().count('TX ')==before.count('TX '), 'status sent a command'
         assert initial['bridge']['serial_open']==(mode!='absent')
         assert initial['bridge']['last_transmission'] is None
+        Path(str(log)+'.armed').touch()
         reply=request(path)
         after=status(path)
         if mode=='live':
@@ -211,7 +224,7 @@ for payload in (b'x'*513, b'partial'):
 with bridge_process() as (path,log,process):
     text=request(path,b'status\n')
     good=json.loads(text)
-    for bad in (json.dumps({**good, 'rooms':['a','b','c']}), '{}', text+' trailing', text.replace('"schema":4','"schema":4,"schema":4'),
+    for bad in (json.dumps({**good, 'rooms':['a','b','c']}), '{}', text+' trailing', text.replace('"schema":5','"schema":5,"schema":5'),
                 text.replace('"generated_at":', '"generated_at":NaN,"ignored":'),
                 text.replace('"supported":false','"supported":0'),
                 text.replace('"value":null','"value":56')):
