@@ -99,7 +99,7 @@ The status returned by the bridge's socket is a JSON object with these parts:
 - `config`: the four configuration parts, or null if the configuration isn't valid.
 - `actions`: each command name, its room, its function, whether it is verified, & whether it is allowed now. `allowed` is false for every action while the bridge is faulted or in dry-run, even if the configuration would allow it.
 - `ir`: the receiver & remote state.
-- `rooms`: power, source, volume & mute for each room, each with `value`, `observed_at`, `age` & `supported`. Volume & source (the selected input) are read from the Bose unit for Rooms A, B & C, only when a status read asks, & carry their age. Power & mute (all rooms) & every value for Room D have `supported` false & no value, because the bridge can't read them. The status uses schema 5; Home Assistant accepts schemas 4 and 5.
+- `rooms`: power, source, volume & mute for each room, each with `value`, `observed_at`, `age` & `supported`. Volume & source (the selected input) are read from the Bose unit for Rooms A, B & C, only when a status read asks, & carry their age. Power & mute (all rooms) & every value for Room D have `supported` false & no value, because the bridge can't read them.
 
 ## Commands the bridge can send
 
