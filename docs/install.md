@@ -27,7 +27,7 @@ This project isn't in the default HACS catalog yet, so you add it to HACS as a c
 
 **With HACS (recommended)**
 
-1. Install [HACS](https://hacs.xyz/docs/use/download/download/) if you haven't. It's a separate community integration, It's a separate Home Assistant add-on that needs a free GitHub account to finish setup. its setup needs a free GitHub account.
+1. Install [HACS](https://hacs.xyz/docs/use/download/download/) if you haven't. It's a separate community integration, and its setup needs a free GitHub account.
 2. In Home Assistant, open HACS. Select the three-dot menu at the top right, then Custom repositories.
 3. In Repository, paste `https://github.com/6K6666/bose-lifestyle-controller`. In Type, choose Integration. Select Add, then close the dialog.
 4. Search HACS for "Bose Lifestyle Assistant", open it, and select Download. Accept the latest release.
