@@ -16,6 +16,11 @@ We need owners with an active, working Zone D to help test & improve support. We
 
 We also seek donor M1/P1/Lifestyle equipment, RF test equipment, & research help for [live state support](docs/live-state-research.md); donors & successful contributors will be prominently credited.
 
+## Quick install
+
+1. Add this repository to HACS as a custom repository (Integration): [open it in your Home Assistant](https://my.home-assistant.io/redirect/hacs_repository/?owner=6K6666&repository=bose-lifestyle-controller&category=integration), or follow step A1 in [Install](docs/install.md).
+2. Install the bridge on the Linux computer wired to the Bose unit, & pair it from Home Assistant (steps A2 to A6).
+
 ## Documentation
 
 - [Start here](docs/start-here.md): what this is, & which page to read next.
