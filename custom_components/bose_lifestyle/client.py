@@ -17,7 +17,7 @@ ACCEPTED_PREFIXES = ('transmitted ', 'DRY RUN; ', 'identified ')   # any catalog
 class Client:
     def __init__(self, data, transport=None, config_dir=Path('/config')):
         self.data = data
-        self.dynamic = frozenset()   # schema-4 action names from the last status; the bridge host's allowed flag decides each one
+        self.dynamic = frozenset()   # action names from the last status; the bridge host's allowed flag decides each one
         if not HOST_PATTERN.fullmatch(data['host']) or not USER_PATTERN.fullmatch(data['user']) or type(data['port']) is not int or not 1 <= data['port'] <= 65535:
             raise BridgeError('invalid_connection')
         self.transport = SshTransport(config_dir,data['host'],data['user'],data['port']) if transport is None else transport
@@ -100,7 +100,7 @@ def validate_events(reply):
         raise BridgeError('invalid_response') from error
 
 def validate_status(reply):
-    """Shared status validator (protocol.py) with HA's last-action rules. Schema 4 only; unknown health values degrade to 'unknown'."""
+    """Shared status validator (protocol.py) with HA's last-action rules. Schemas 4 and 5; unknown health values degrade to 'unknown'."""
     try:
         data=validate_shared_status(reply,degrade_unknown=True,action_ok=lambda name: ACTION_NAME.fullmatch(name) is not None)
         catalog=data['actions']

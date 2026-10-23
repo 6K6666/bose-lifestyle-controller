@@ -1,4 +1,4 @@
-"""Status schema 4, the shared status validator and the bridge host forced-command exit codes. Fake serial only."""
+"""Status schema 5 (schema 4 plus live room telemetry), the shared status validator and the bridge host forced-command exit codes. Fake serial only."""
 import _bootstrap
 import copy
 import contextlib
@@ -83,7 +83,7 @@ def check(payload, **kwargs):
 with tempfile.TemporaryDirectory() as tmp:
     with bridge(tmp) as path:
         snap = status(path)
-        assert set(snap) == TOP4 and snap['schema'] == 4, sorted(snap)
+        assert set(snap) == TOP4 and snap['schema'] == 5, sorted(snap)   # the bridge emits 5; the validator still accepts 4
         assert set(snap['bridge']) == BRIDGE4 and snap['bridge']['config'] == 'ok'
         assert snap['config'] is not None and set(snap['config']) == {'zones', 'sources', 'unverified', 'ir'}   # volume_steps appears only when set
         assert set(snap['config']['zones']) == set('abcd') and all(set(v) == {'enabled'} for v in snap['config']['zones'].values())
@@ -102,7 +102,7 @@ with tempfile.TemporaryDirectory() as tmp:
         assert reply == {'ok': False, 'error': 'uncertain'}, reply
         snap = status(path)
         assert snap['bridge']['config'] == 'config-uncertain' and snap['config'] is None and snap['actions'] == {}
-print('Status schema 4 has exact keys; invalid and uncertain stores publish config null and actions {}')
+print('Status schema 5 has exact keys; invalid and uncertain stores publish config null and actions {}')
 
 
 with tempfile.TemporaryDirectory() as tmp:
@@ -145,7 +145,7 @@ def source_mismatch(p): p['actions']['room-a-mute']['source'] = 'am'
 def bad_source(p): p['actions']['room-a-source-am']['source'] = 'x'
 def source_missing(p): p['actions']['room-a-source-am']['source'] = None
 BAD_V4 = {
-    'schema 5': lambda p: p.update(schema=5),
+    'schema 6': lambda p: p.update(schema=6),
     'schema bool': lambda p: p.update(schema=True),
     'missing config': lambda p: p.pop('config'),
     'missing actions': lambda p: p.pop('actions'),
@@ -180,7 +180,7 @@ for label, edit in BAD_V4.items():
     else:
         raise AssertionError('accepted: ' + label)
 check(base)
-print('Schema 5 and malformed schema 4 variants are rejected by the shared validator')
+print('Schema 6 and malformed schema 5 variants are rejected by the shared validator')
 
 
 def last_tx(p, action, outcome='transmitted-with-matching-response'):
@@ -229,7 +229,7 @@ for legacy_schema in (2, 3):
     try: check(legacy, degrade_unknown=True)
     except ValueError: pass
     else: raise AssertionError('schema %d accepted' % legacy_schema)
-print('Schema 2 and 3 payloads are rejected, even with degrade_unknown; only schema 4 validates')
+print('Schema 2 and 3 payloads are rejected, even with degrade_unknown; only schemas 4 and 5 validate')
 
 
 @contextmanager
@@ -298,15 +298,20 @@ PORT_FAKE = r'''
 import sys,types
 mode,path,state=sys.argv[1:4]
 from bose_commands import COMMANDS,RESPONSES,CATALOG,expected_reply
+sys.path.insert(0,'tests')
+from helpers import QUERY_REPLIES
 class Port:
  def __init__(self,**kwargs): self.pending=b''
  def open(self): pass
  def close(self): pass
  in_waiting=0
+ timeout=None   # pyserial has this attribute; the telemetry poll saves and restores it
  def read(self,n):
   out,self.pending=self.pending[:n],self.pending[n:]
   return out
  def write(self,data):
+  if data in QUERY_REPLIES:   # a telemetry status query
+   self.pending=QUERY_REPLIES[data]; return len(data)
   name=next(k for k in COMMANDS if COMMANDS[k]==data)
   if name=='identify': reply=RESPONSES['identify']
   elif mode=='fault' and name=='room-a-mute': reply=b'\r\r\r\r>.C99999999999\r'

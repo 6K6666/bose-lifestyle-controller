@@ -29,6 +29,8 @@ PORT = '/dev/serial/by-id/usb-example-if00-port0'
 # Fake pyserial: every construction and open is recorded in a log file; open() fails when the log says so.
 FAKE_SERIAL = r'''
 import sys, types
+sys.path.insert(0, 'tests')
+from helpers import QUERY_REPLIES
 log = sys.argv[2]
 def record(text):
     with open(log, 'a') as handle:
@@ -37,6 +39,7 @@ class Serial:
     def __init__(self, **kwargs):
         record('construct')
         self.port = None
+        self.timeout = kwargs.get('timeout')
         self.pending = b''
         self.in_waiting = 0
     def open(self):
@@ -44,8 +47,13 @@ class Serial:
     def close(self):
         record('close')
     def read(self, n):
-        return b''
+        out, self.pending = self.pending[:n], self.pending[n:]   # only a telemetry query ever gets a reply
+        return out
     def write(self, data):
+        if data in QUERY_REPLIES:
+            record('QX ' + data.hex())
+            self.pending = QUERY_REPLIES[data]
+            return len(data)
         record('TX ' + data.hex())
         return len(data)
     def flush(self):

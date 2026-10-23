@@ -296,6 +296,8 @@ FAKE = r'''
 import sys,types,time
 from pathlib import Path
 from bose_commands import COMMANDS,RESPONSES
+sys.path.insert(0,'tests')
+from helpers import QUERY_REPLIES
 mode,path,log,state=sys.argv[1:5]
 class Port:
  def __init__(self,**kwargs): self.pending=b''; self.writes=0
@@ -313,6 +315,9 @@ class Port:
   if mode=='slow' and out: time.sleep(0.8)
   return out
  def write(self,data):
+  if data in QUERY_REPLIES:   # a telemetry status query: answered, logged apart from commands, not a tick
+   with open(log,'a') as f: f.write('QX '+data.hex()+'\n')
+   self.pending=QUERY_REPLIES[data]; return len(data)
   with open(log,'a') as f: f.write('TX '+data.hex()+' TO %s %s\n' % (getattr(self,'timeout',None),getattr(self,'write_timeout',None)))
   self.writes+=1
   if mode=='slowops' and self.writes==2: time.sleep(1.8)
