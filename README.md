@@ -14,7 +14,7 @@ Only serial-connected Lifestyle systems are covered. Newer Bose speakers use a d
 
 We need owners with an active, working Zone D to help test & improve support. We also welcome research into other Lifestyle systems with documented serial control. See [Help Wanted](docs/help-wanted.md) for testing requests, compatibility leads, & how to contribute.
 
-We also seek donor M1/P1/Lifestyle equipment, RF test equipment, & research help for [live state support](docs/live-state-research.md); donors & successful contributors will be prominently credited.
+Rooms A, B & C now show live volume & selected input. We still need help finding a way to read each room's power & mute state, & we still welcome donor M1/P1/Lifestyle equipment, RF test equipment, & research help. See [live state research](docs/live-state-research.md); donors & successful contributors will be prominently credited.
 
 ## Quick install
 

@@ -1,8 +1,8 @@
 """Packaging for HACS and Home Assistant (release plan, Task 2).
 
 Run: python3 -B tests/test_packaging.py
-Requirements come from maintainer/release/hacs-requirements.md. Placeholder values are registered in
-docs/RELEASE-PLACEHOLDERS.md and must be replaced at release.
+Requirements come from the HACS integration publishing rules. Placeholder values are registered in
+.github/RELEASE-PLACEHOLDERS.md and must be replaced at release.
 """
 import _bootstrap
 import hashlib
@@ -25,7 +25,7 @@ BRAND = ROOT / 'brand'
 BRAND_SIZES = {'icon.png': (256, 256), 'icon@2x.png': (512, 512), 'logo.png': (640, 160),
                'logo@2x.png': (1280, 320), 'dark_logo.png': (640, 160), 'dark_logo@2x.png': (1280, 320)}
 PAGE_SIZES = {'docs/assets/banner.png': (1280, 320), 'docs/assets/social.png': (1200, 630)}
-REGISTRY = ROOT / 'docs' / 'RELEASE-PLACEHOLDERS.md'
+REGISTRY = ROOT / '.github' / 'RELEASE-PLACEHOLDERS.md'
 PROJECT_URL = 'https://github.com/6K6666/bose-lifestyle-controller'
 OWNER = '@6K6666'
 IOT_CLASSES = {'assumed_state', 'cloud_polling', 'cloud_push', 'local_polling', 'local_push', 'calculated'}
@@ -116,7 +116,7 @@ class HacsTests(unittest.TestCase):
         self.assertNotIn('version', json.loads(read('hacs.json')))
 
     def test_released_packaging_has_no_unfilled_placeholders(self):
-        registry = read('docs/RELEASE-PLACEHOLDERS.md')
+        registry = read('.github/RELEASE-PLACEHOLDERS.md')
         self.assertNotIn('example.invalid/bose-lifestyle', registry)
         self.assertNotIn('PLACEHOLDER-OWNER', registry)
         self.assertNotIn('RELEASE-DATE', registry)

@@ -10,7 +10,7 @@ This file is the one place where placeholders are allowed to appear, because it 
 ## Settled packaging values
 
 - `hacs.json` and `requirements-ha-test.txt` both use Home Assistant `2026.10.0`, the current stable release as of 2026-10-13.
-- Every GitHub Action in `.github/workflows/` uses a full commit SHA. The HACS action pin is to the current upstream action commit; its action metadata still points to the mutable `ghcr.io/hacs/action:main` image, as noted in `maintainer/release/hacs-requirements.md`.
+- Every GitHub Action in `.github/workflows/` uses a full commit SHA. The HACS action pin is to the current upstream action commit; its action metadata still points to the mutable `ghcr.io/hacs/action:main` image.
 - Keep both brand copies: HACS checks the repository-level `brand/` directory, while Home Assistant custom integrations load `custom_components/bose_lifestyle/brand/`.
 
 ## Release-time text and checks

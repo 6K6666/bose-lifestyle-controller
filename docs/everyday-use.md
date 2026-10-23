@@ -34,7 +34,9 @@ Some inputs are experimental. The bridge sends them only when that room allows u
 
 After a successful press, the card shows **Last sent** with the input or control & how long ago it was sent.
 
-**Last sent is not the current room state.** The bridge can't read the room back from the Bose unit. The label shows what the bridge last sent. It doesn't show whether the room is on, what volume it is at, or whether it is muted. Check the room itself.
+**Last sent is not the current room state.** The bridge can't read the room back from the Bose unit. The label shows what the bridge last sent. It doesn't show whether the room is on or whether it is muted. Check the room itself.
+
+The card's **Volume** and **Selected input** for Rooms A, B & C are read from the Bose unit, so they also reflect changes made with the original remote. They can lag by a few seconds. Selected input is the unit's selector, not proof that audio is playing. Room D shows neither.
 
 ## The infrared remote
 

@@ -37,7 +37,7 @@ COMP = 'custom_components/bose_lifestyle'
 BRAND_FILES = ['brand/icon.png', 'brand/icon@2x.png'] + [f'{COMP}/brand/{n}' for n in (
     'icon.png', 'icon@2x.png', 'logo.png', 'logo@2x.png', 'dark_logo.png', 'dark_logo@2x.png')]
 MIRRORS = [('brand/icon.png', f'{COMP}/brand/icon.png'), ('brand/icon@2x.png', f'{COMP}/brand/icon@2x.png')]
-REGISTRY_REL = 'docs/RELEASE-PLACEHOLDERS.md'
+REGISTRY_REL = '.github/RELEASE-PLACEHOLDERS.md'
 RESULTS_REL = 'build/test-results.json'
 RUNNER = 'run_tests.sh'
 FORBIDDEN_MEMBERS = ('maintainer/', 'reports/', 'backups/', 'dist/', 'docs/superpowers/', 'build/')

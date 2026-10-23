@@ -87,7 +87,7 @@ Home Assistant side:
 
 ## Status
 
-The `status` command shows whether the bridge runs & the last command transmitted. It doesn't report current room power, source, volume or mute; the project has no verified query for live room state. `Last command sent` is a command record, not a claim that the room is currently in that state.
+The `status` command shows whether the bridge runs & the last command transmitted. It doesn't report current room power or mute; the project has no verified query for them. Rooms A, B & C do report a volume value & a selected input (see below). `Last command sent` is a command record, not a claim that the room is currently in that state.
 
 - `Bridge: running (live mode); serial port open; fault: none`, or `Bridge: not running (saved configuration)`.
 - `Last command sent: room-b-volume-up (transmitted-with-matching-response)` shows the last recorded transmission & its response outcome, or `none recorded` / `unavailable (bridge stopped)` when there is no live transmission record.
@@ -99,7 +99,7 @@ The status returned by the bridge's socket is a JSON object with these parts:
 - `config`: the four configuration parts, or null if the configuration isn't valid.
 - `actions`: each command name, its room, its function, whether it is verified, & whether it is allowed now. `allowed` is false for every action while the bridge is faulted or in dry-run, even if the configuration would allow it.
 - `ir`: the receiver & remote state.
-- `rooms`: power, source, volume & mute for each room. The bridge can't read these from the Bose unit, so each value is unknown.
+- `rooms`: power, source, volume & mute for each room, each with `value`, `observed_at`, `age` & `supported`. Volume & source (the selected input) are read from the Bose unit for Rooms A, B & C, only when a status read asks, & carry their age. Power & mute (all rooms) & every value for Room D have `supported` false & no value, because the bridge can't read them. The status uses schema 5; Home Assistant accepts schemas 4 and 5.
 
 ## Commands the bridge can send
 
@@ -166,7 +166,7 @@ Pairing messages from the Home Assistant integration are listed in [Fix a proble
   The first problem stops the press & it is reported as uncertain: an unexpected reply latches the fault as usual, & a command that can't be written (the adapter was lost, or the room was switched off mid-press) stops it without a fault. Steps already sent are never undone. If the Bose unit replies in an unexpected way, the bridge pauses its commands until someone investigates.
 - **Identify.** Of the supported `bose-lifestyle` commands, only `identify --yes` sends the identify command, & it sends only to a running bridge. The restricted SSH command also accepts the catalogued `identify` action, which Home Assistant doesn't use.
 - **Loopback diagnostic.** `bose_serial.py loopback` is the one other program that can open the serial port. By default it is a dry run; it opens a port only with `--live-loopback`, on the port selected by `--port PATH`, & it is meant for a serial adapter that isn't connected to the Bose unit.
-- **What is read back.** The bridge checks each command's reply against the reply it expects. It doesn't read the rooms' power, volume, source or mute from the Bose unit. Those values are shown as unknown.
+- **What is read back.** The bridge checks each command's reply against the reply it expects. It reads the reported volume & selected input of Rooms A, B & C, & shows their age. It doesn't read power or mute, & it doesn't read Room D; those values are shown as unknown. The selected input is the unit's selector, not proof that audio is playing.
 - **Keys and secrets.** The private pairing key, the pinned host key & the authorized key line aren't shown in logs or messages.
 
 ## Technical notes

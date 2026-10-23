@@ -61,7 +61,7 @@ def base_files():
                                              'version': '1.0.0'}) + '\n',
         'brand/icon.png': PNG_A,
         'brand/icon@2x.png': PNG_B,
-        'docs/RELEASE-PLACEHOLDERS.md': REGISTRY,
+        '.github/RELEASE-PLACEHOLDERS.md': REGISTRY,
         'docs/start-here.md': 'Synthetic page.\n',
         # Test data that must not look like a placeholder: a bare example host and the source of the
         # token pattern itself, as the public test files spell them.
@@ -167,7 +167,7 @@ class GateTests(GateCase):
         registry = (REGISTRY + '\n## Release-time checks\n\n'
                     '| Item | Where | Who | What |\n|---|---|---|---|\n'
                     '| HACS validation action | workflow | Maintainer | Verify brands. |\n')
-        repo = self.release_tree(files={'docs/RELEASE-PLACEHOLDERS.md': registry})
+        repo = self.release_tree(files={'.github/RELEASE-PLACEHOLDERS.md': registry})
         gate = release_gate.Gate(root=repo, scratch=self.tmp())
         self.assertEqual(release_gate.c_placeholders(gate), (True, ''))
 
