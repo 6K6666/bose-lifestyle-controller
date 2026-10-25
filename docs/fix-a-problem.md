@@ -68,9 +68,11 @@ The receiver is listed & the bridge runs, but the remote still does nothing: run
 - **Not configured.** The installer was run without `--serial-device`. Run it again with the adapter's by-id path. The installer doesn't change the saved configuration.
 - **Configured but not open.** The bridge tries to open the exact path every few seconds. Check that the adapter is connected, & that its path under `/dev/serial/by-id/` is the same as in the service. Run `ls -l /dev/serial/by-id/` to see the current name.
 
+- **A status query failed.** A missing, incomplete or malformed volume/input reply closes the serial port for five seconds, then the bridge reopens it & resumes polling automatically. Controls are temporarily unavailable while the port is closed. Last valid readings keep their original timestamps & become stale; failed queries never replay a room command. The journal says `Status query failed; serial recovery in 5s`. Repeated failures repeat this cooldown; check the cable & adapter if they persist.
+
 ### A pause is latched
 
-`status` shows a fault, & `events` shows a `fault` entry. The bridge stopped sending commands after an unexpected reply or a serial failure, so the household sees the pause message.
+`status` shows a fault, & `events` shows a `fault` entry. The bridge stopped sending commands after an uncertain control exchange or a stalled output drain, so the household sees the pause message. A stalled drain also latches during a status query because its worker may still be running; the bridge cannot safely reopen the port alongside it.
 
 1. Read `events` & the journal for the fault entry. Do not send commands from the card while you investigate.
 2. Check the Bose unit with the original remote, & check the cable & the adapter.

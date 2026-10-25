@@ -478,16 +478,20 @@ def _serve(path=SOCKET, dry_run=False, ir_config=None, ir_state=IR_STATE, serial
             reason = str(error) if isinstance(error, SerialFault) else (
                 'unexpected-response' if isinstance(error, ValueError) else 'serial-io-during-transmission')
             close_port()
-            if isinstance(error, SERIAL_IO_ERRORS) and not attempted:
-                health['recovery'] = 'transport-lost-before-write'
-                next_port_check = time.monotonic() + 5
-            else:
+            detail = f'{reason}; rx={received.hex(" ")}'
+            if pre_input:
+                detail += f'; pre={pre_input.hex(" ")}'
+            if reason == 'write-drain-timeout':
+                # A drain worker may still be running; do not overlap it with a reopened port.
                 health['fault'] = reason
                 health['recovery'] = 'operator-investigation-required'
-                detail = f'{reason}; rx={received.hex(" ")}'
-                if pre_input:
-                    detail += f'; pre={pre_input.hex(" ")}'
                 log.add('fault', action, detail)
+            else:
+                # Queries change no room state: reopen with a clean RX buffer after a cooldown, never replay a command.
+                health['recovery'] = 'waiting-for-exact-adapter'
+                next_port_check = time.monotonic() + 5
+                log.add('serial', action, 'telemetry recovery in 5s; ' + detail)
+                print('Status query failed; serial recovery in 5s: ' + reason, flush=True)
             return False
 
     def stop(*_):
