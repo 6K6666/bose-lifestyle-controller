@@ -181,8 +181,9 @@ class ChangeCommandsTest(ChangeTest):
         expected = copy.deepcopy(BASELINE_CONFIG)
         expected['zones']['c']['enabled'] = False
         self.assertEqual(json.loads(self.config_bytes()), expected)
-        self.assertEqual(out.strip(), bose_cli.MESSAGES['saved_offline'])
+        self.assertEqual(out.strip(), bose_cli.MESSAGES['settings_saved_offline'])
         self.assertIn('It applies when the bridge next starts.', out)
+        self.assertIn('No Bose control command was sent', out)
 
     def test_uncertain_commit_reports_uncertain_and_exit_1_without_retry(self):
         real_fsync = os.fsync
@@ -222,7 +223,7 @@ class ChangeCommandsTest(ChangeTest):
             self.assertEqual(err.strip(), bose_cli.MESSAGES['reply_' + kind], kind)
         self.bridge.reply_for = default_reply
         code, out, err = self.run_cli('zone', 'b', 'on')
-        self.assertEqual((code, out.strip(), err), (0, bose_cli.MESSAGES['saved'], ''))
+        self.assertEqual((code, out.strip(), err), (0, bose_cli.MESSAGES['settings_saved'], ''))
 
     def test_invalid_argument_exit_2_nothing_sent(self):
         self.start_bridge()
