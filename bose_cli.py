@@ -145,6 +145,8 @@ MESSAGES = {
     'volume_steps': 'Volume steps per press: {steps}',
     'saved': 'Saved.',
     'saved_offline': 'Saved. It applies when the bridge next starts.',
+    'settings_saved': 'Saved configuration. No Bose control command was sent.',
+    'settings_saved_offline': 'Saved configuration. No Bose control command was sent. It applies when the bridge next starts.',
     'reply_ok': 'Saved.',
     'reply_invalid_request': "That change wasn't valid. Nothing was changed.",
     'reply_dry_run': 'The bridge is in test mode, so changes are not allowed.',
@@ -445,7 +447,11 @@ def _report_change(result, args, offline, out, err):
         known = error in ('invalid_request', 'dry_run', 'not_saved', 'uncertain', 'unsupported')
         err.write(MESSAGES['reply_' + error if known else 'reply_unknown'] + '\n')
         return 1
-    out.write((MESSAGES['saved_offline'] if offline else MESSAGES['saved']) + '\n')
+    if args.command in ('zone', 'source'):
+        key = 'settings_saved_offline' if offline else 'settings_saved'
+    else:
+        key = 'saved_offline' if offline else 'saved'
+    out.write(MESSAGES[key] + '\n')
     if args.command == 'ir':
         out.write(MESSAGES['ir_target_forgets_mute'] + '\n')
     return 0
