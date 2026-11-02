@@ -151,11 +151,15 @@ Where: Home Assistant. Enter `bridge.example.invalid`, the user `bose` and port 
 
 Expected: the integration is created. Continue with [Install](install.md), step A7 to add the card, then step A8 to set up rooms and inputs.
 
-## Step 12: Turn on a room and check it
+## Step 12: Check a room using a live control
 
-Where: Home Assistant, or the command line (`sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle zone a on`, then `source aux on`).
+Where: Home Assistant, after you have added the Bose Lifestyle Assistant card and enabled the room and its input in [Install](install.md), steps A7 and A8.
 
-Expected: the room responds as it does to the original Bose remote.
+On the dashboard card, press the room's on control once.
+
+Expected: the Bose unit responds as it does to the original Bose remote, and the card shows a "Last sent" label after a successful press. If it does not, see [Everyday use](everyday-use.md) and [Fix a problem](fix-a-problem.md). Do not repeatedly press the same control.
+
+The command-line settings `sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle zone a on` and `sudo -u bose /opt/bose-lifestyle/bin/bose-lifestyle source aux on` enable a room and mark an input connected in saved configuration. **They do not transmit a Bose control command or prove that the physical unit responds.** Use the dashboard card for the live command check.
 
 ## Checkpoints
 
@@ -169,6 +173,6 @@ Expected: the room responds as it does to the original Bose remote.
 | Step 10 | `Bridge: running (live mode)` from `status`. |
 | Step 10a | `Three matching presses verified.` for each button, then the saved remote from `ir learn`. |
 | Step 11 | The integration appears in Home Assistant. |
-| Step 12 | The room responds. |
+| Step 12 | The room responds to a dashboard-card press; the card shows `Last sent`. |
 
 Nothing is sent to the Bose unit when the bridge starts. The first command the bridge sends is one you ask for.
